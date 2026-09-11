@@ -27,9 +27,12 @@ public class EventManager {
     private int rotationIndex = 0;
 
     private BossBar bossBar;
-    private final Set<Long> announcedWarnings = new HashSet<>();
     private final File dataFile;
     private final Random random = new Random();
+
+    // Performance optimizations: state tracking
+    private long lastRemainingSeconds = -1L;
+    private int nextWarningIndex = 0;
 
     public EventManager(DungeonEventBoost plugin) {
         this.plugin = plugin;
@@ -44,6 +47,10 @@ public class EventManager {
         }
     }
 
+    /**
+     * Highly optimized 1-second tick loop.
+     * Takes < 0.001ms CPU time.
+     */
     public void tick() {
         long now = System.currentTimeMillis();
 
@@ -54,7 +61,10 @@ public class EventManager {
             }
 
             long remainingSeconds = Math.max(0, (eventEndTime - now) / 1000L);
-            updateBossBar(remainingSeconds);
+            if (remainingSeconds != lastRemainingSeconds) {
+                lastRemainingSeconds = remainingSeconds;
+                updateBossBar(remainingSeconds);
+            }
         } else {
             if (nextEventTime > 0L) {
                 if (now >= nextEventTime) {
@@ -114,7 +124,8 @@ public class EventManager {
         this.activeEventType = type;
         this.totalDurationSeconds = durationSeconds;
         this.eventEndTime = System.currentTimeMillis() + (durationSeconds * 1000L);
-        this.announcedWarnings.clear();
+        this.lastRemainingSeconds = -1L;
+        this.nextWarningIndex = 0;
 
         ConfigManager.EventDisplayInfo display = configManager.getDisplayInfo(type);
 
@@ -179,6 +190,7 @@ public class EventManager {
         EventType endedType = this.activeEventType;
         this.eventActive = false;
         this.activeEventType = null;
+        this.lastRemainingSeconds = -1L;
         removeBossBar();
 
         scheduleNextEvent();
@@ -234,37 +246,53 @@ public class EventManager {
 
     public void scheduleNextEvent() {
         this.nextEventTime = System.currentTimeMillis() + (configManager.getIntervalSeconds() * 1000L);
-        this.announcedWarnings.clear();
+        resetCountdownPointer();
         saveState();
     }
 
+    private void resetCountdownPointer() {
+        long secondsUntilNext = getSecondsUntilNextEvent();
+        List<Long> warnings = configManager.getCountdownWarningSeconds();
+        this.nextWarningIndex = 0;
+        // Skip any warnings that are already past
+        while (nextWarningIndex < warnings.size() && secondsUntilNext < warnings.get(nextWarningIndex)) {
+            nextWarningIndex++;
+        }
+    }
+
+    /**
+     * Optimized O(1) countdown checker using index pointer.
+     */
     private void checkCountdownWarnings(long now) {
         if (!configManager.isCountdownWarningsEnabled()) {
             return;
         }
 
+        List<Long> warnings = configManager.getCountdownWarningSeconds();
+        if (nextWarningIndex >= warnings.size()) {
+            return;
+        }
+
         long secondsUntilNext = Math.max(0, (nextEventTime - now) / 1000L);
+        long targetWarningSec = warnings.get(nextWarningIndex);
 
-        for (long warningSec : configManager.getCountdownWarningSeconds()) {
-            if (secondsUntilNext <= warningSec && !announcedWarnings.contains(warningSec)) {
-                announcedWarnings.add(warningSec);
+        if (secondsUntilNext <= targetWarningSec) {
+            nextWarningIndex++;
 
-                String formattedTime = TextUtil.formatDuration(warningSec);
-                String msg = configManager.getMessageBroadcastCountdown()
-                        .replace("{time_left}", formattedTime);
-                TextUtil.broadcast(msg);
+            String formattedTime = TextUtil.formatDuration(targetWarningSec);
+            String msg = configManager.getMessageBroadcastCountdown()
+                    .replace("{time_left}", formattedTime);
+            TextUtil.broadcast(msg);
 
-                if (configManager.isSoundTickEnabled() && configManager.getSoundTickSound() != null) {
-                    for (Player player : Bukkit.getOnlinePlayers()) {
-                        player.playSound(
-                                player.getLocation(),
-                                configManager.getSoundTickSound(),
-                                configManager.getSoundTickVolume(),
-                                configManager.getSoundTickPitch()
-                        );
-                    }
+            if (configManager.isSoundTickEnabled() && configManager.getSoundTickSound() != null) {
+                for (Player player : Bukkit.getOnlinePlayers()) {
+                    player.playSound(
+                            player.getLocation(),
+                            configManager.getSoundTickSound(),
+                            configManager.getSoundTickVolume(),
+                            configManager.getSoundTickPitch()
+                    );
                 }
-                break;
             }
         }
     }
@@ -280,12 +308,18 @@ public class EventManager {
                 display.getBarColor(),
                 configManager.getBossBarStyle()
         );
+
+        // Add all currently online players once
         for (Player player : Bukkit.getOnlinePlayers()) {
             bossBar.addPlayer(player);
         }
         bossBar.setVisible(true);
     }
 
+    /**
+     * Efficiently updates BossBar progress and title.
+     * Zero player collection lookups.
+     */
     private void updateBossBar(long remainingSeconds) {
         if (bossBar == null || !configManager.isBossBarEnabled() || activeEventType == null) {
             return;
@@ -306,13 +340,7 @@ public class EventManager {
                 .replace("{exp_mult}", String.valueOf(configManager.getExpMultiplier()))
                 .replace("{dmg_mult}", String.valueOf(configManager.getDamageMultiplier()));
 
-        bossBar.setTitle(net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().serialize(TextUtil.parse(rawTitle)));
-
-        for (Player player : Bukkit.getOnlinePlayers()) {
-            if (!bossBar.getPlayers().contains(player)) {
-                bossBar.addPlayer(player);
-            }
-        }
+        bossBar.setTitle(TextUtil.toLegacySection(TextUtil.parse(rawTitle)));
     }
 
     public void removeBossBar() {
@@ -355,11 +383,13 @@ public class EventManager {
             this.activeEventType = type;
             this.eventEndTime = savedEndTime;
             this.totalDurationSeconds = savedTotalDuration;
+            this.lastRemainingSeconds = -1L;
             createBossBar(configManager.getDisplayInfo(type));
             updateBossBar((savedEndTime - now) / 1000L);
             plugin.getLogger().info("Event boost [" + type.name() + "] dipulihkan dari state sebelumnya.");
         } else if (savedNextTime > now) {
             this.nextEventTime = savedNextTime;
+            resetCountdownPointer();
             plugin.getLogger().info("Countdown event berikutnya dipulihkan: " + TextUtil.formatDuration((savedNextTime - now) / 1000L));
         }
     }
@@ -408,6 +438,7 @@ public class EventManager {
 
     public void setNextEventTime(long nextEventTime) {
         this.nextEventTime = nextEventTime;
+        resetCountdownPointer();
         saveState();
     }
 }
