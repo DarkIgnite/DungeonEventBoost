@@ -3,6 +3,7 @@ package com.leftycraft.dungeoneventboost.command;
 import com.leftycraft.dungeoneventboost.DungeonEventBoost;
 import com.leftycraft.dungeoneventboost.config.ConfigManager;
 import com.leftycraft.dungeoneventboost.event.EventManager;
+import com.leftycraft.dungeoneventboost.event.EventType;
 import com.leftycraft.dungeoneventboost.util.TextUtil;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -47,24 +48,34 @@ public class EventBoostCommand implements CommandExecutor, TabCompleter {
                     return true;
                 }
 
+                EventType targetType = null;
                 long durationSeconds = configManager.getDurationSeconds();
+
                 if (args.length > 1) {
-                    try {
-                        double minutes = Double.parseDouble(args[1]);
-                        if (minutes <= 0) {
-                            TextUtil.sendMessage(sender, configManager.getMessagePrefix() + "<red>Durasi harus lebih dari 0 menit!</red>");
-                            return true;
+                    EventType parsed = EventType.fromString(args[1]);
+                    if (parsed != null) {
+                        targetType = parsed;
+                        if (args.length > 2) {
+                            durationSeconds = parseDurationMinutes(sender, args[2], durationSeconds);
+                            if (durationSeconds <= 0) return true;
                         }
-                        durationSeconds = (long) (minutes * 60);
-                    } catch (NumberFormatException e) {
-                        TextUtil.sendMessage(sender, configManager.getMessagePrefix() + "<red>Format angka durasi tidak valid!</red>");
-                        return true;
+                    } else {
+                        // Maybe args[1] is duration number
+                        durationSeconds = parseDurationMinutes(sender, args[1], durationSeconds);
+                        if (durationSeconds <= 0) return true;
                     }
                 }
 
-                eventManager.startEvent(durationSeconds);
+                if (targetType == null) {
+                    targetType = eventManager.pickNextEventType();
+                }
+
+                eventManager.startEvent(targetType, durationSeconds);
                 long minutes = Math.max(1, durationSeconds / 60);
-                String startMsg = configManager.getMessageStartedManual().replace("{duration}", String.valueOf(minutes));
+                String eventName = configManager.getDisplayInfo(targetType).getName();
+                String startMsg = configManager.getMessageStartedManual()
+                        .replace("{event_name}", eventName)
+                        .replace("{duration}", String.valueOf(minutes));
                 TextUtil.sendMessage(sender, configManager.getMessagePrefix() + startMsg);
                 return true;
 
@@ -105,11 +116,29 @@ public class EventBoostCommand implements CommandExecutor, TabCompleter {
         }
     }
 
+    private long parseDurationMinutes(CommandSender sender, String arg, long fallback) {
+        try {
+            double minutes = Double.parseDouble(arg);
+            if (minutes <= 0) {
+                TextUtil.sendMessage(sender, configManager.getMessagePrefix() + "<red>Durasi harus lebih dari 0 menit!</red>");
+                return -1;
+            }
+            return (long) (minutes * 60);
+        } catch (NumberFormatException e) {
+            TextUtil.sendMessage(sender, configManager.getMessagePrefix() + "<red>Format angka durasi tidak valid: " + arg + "</red>");
+            return -1;
+        }
+    }
+
     private void showStatus(CommandSender sender) {
-        if (eventManager.isEventActive()) {
+        if (eventManager.isEventActive() && eventManager.getActiveEventType() != null) {
+            EventType type = eventManager.getActiveEventType();
+            ConfigManager.EventDisplayInfo display = configManager.getDisplayInfo(type);
             List<String> activeLines = configManager.getMessageStatusActive();
             for (String line : activeLines) {
                 String replaced = line
+                        .replace("{event_name}", display.getName())
+                        .replace("{event_tag}", display.getShortTag())
                         .replace("{time_left}", TextUtil.formatDuration(eventManager.getRemainingSeconds()))
                         .replace("{drop_mult}", String.valueOf(configManager.getDropMultiplier()))
                         .replace("{exp_mult}", String.valueOf(configManager.getExpMultiplier()))
@@ -146,6 +175,18 @@ public class EventBoostCommand implements CommandExecutor, TabCompleter {
         }
 
         if (args.length == 2 && args[0].equalsIgnoreCase("start") && sender.hasPermission("dungeoneventboost.admin")) {
+            List<String> options = new ArrayList<>(Arrays.asList("drops", "exp_skills", "damage", "defense", "economy", "exp_vanilla", "swiftness", "all", "5", "10", "15", "30"));
+            List<String> completions = new ArrayList<>();
+            String prefix = args[1].toLowerCase();
+            for (String opt : options) {
+                if (opt.startsWith(prefix)) {
+                    completions.add(opt);
+                }
+            }
+            return completions;
+        }
+
+        if (args.length == 3 && args[0].equalsIgnoreCase("start") && sender.hasPermission("dungeoneventboost.admin")) {
             return Arrays.asList("5", "10", "15", "30", "60");
         }
 

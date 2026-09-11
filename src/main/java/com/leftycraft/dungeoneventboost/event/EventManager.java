@@ -12,9 +12,7 @@ import org.bukkit.entity.Player;
 import java.io.File;
 import java.io.IOException;
 import java.time.Duration;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class EventManager {
 
@@ -22,13 +20,16 @@ public class EventManager {
     private final ConfigManager configManager;
 
     private boolean eventActive = false;
+    private EventType activeEventType = null;
     private long eventEndTime = 0L;
     private long totalDurationSeconds = 0L;
     private long nextEventTime = 0L;
+    private int rotationIndex = 0;
 
     private BossBar bossBar;
     private final Set<Long> announcedWarnings = new HashSet<>();
     private final File dataFile;
+    private final Random random = new Random();
 
     public EventManager(DungeonEventBoost plugin) {
         this.plugin = plugin;
@@ -57,7 +58,8 @@ public class EventManager {
         } else {
             if (nextEventTime > 0L) {
                 if (now >= nextEventTime) {
-                    startEvent(configManager.getDurationSeconds());
+                    EventType nextType = pickNextEventType();
+                    startEvent(nextType, configManager.getDurationSeconds());
                     return;
                 }
 
@@ -66,15 +68,55 @@ public class EventManager {
         }
     }
 
-    public boolean startEvent(long durationSeconds) {
+    public boolean isBoostActive(EventType type) {
+        if (!eventActive || activeEventType == null) {
+            return false;
+        }
+        return activeEventType == type || activeEventType == EventType.MEGA_FRENZY;
+    }
+
+    public EventType pickNextEventType() {
+        List<EventType> enabled = configManager.getEnabledEvents();
+        if (enabled.isEmpty()) {
+            return EventType.DROPS;
+        }
+
+        if (configManager.getSelectionMode().equalsIgnoreCase("RANDOM")) {
+            if (random.nextDouble() < configManager.getMegaFrenzyChance() && enabled.contains(EventType.MEGA_FRENZY)) {
+                return EventType.MEGA_FRENZY;
+            }
+            List<EventType> regular = new ArrayList<>(enabled);
+            regular.remove(EventType.MEGA_FRENZY);
+            if (regular.isEmpty()) return EventType.MEGA_FRENZY;
+            return regular.get(random.nextInt(regular.size()));
+        } else {
+            // ROTATION mode
+            if (rotationIndex >= enabled.size()) {
+                rotationIndex = 0;
+            }
+            EventType chosen = enabled.get(rotationIndex);
+            rotationIndex = (rotationIndex + 1) % enabled.size();
+            saveState();
+            return chosen;
+        }
+    }
+
+    public boolean startEvent(EventType type, long durationSeconds) {
         if (eventActive) {
             return false;
         }
 
+        if (type == null) {
+            type = EventType.DROPS;
+        }
+
         this.eventActive = true;
+        this.activeEventType = type;
         this.totalDurationSeconds = durationSeconds;
         this.eventEndTime = System.currentTimeMillis() + (durationSeconds * 1000L);
         this.announcedWarnings.clear();
+
+        ConfigManager.EventDisplayInfo display = configManager.getDisplayInfo(type);
 
         // Broadcast messages
         List<String> startBroadcast = configManager.getMessageBroadcastStart();
@@ -82,6 +124,8 @@ public class EventManager {
             long durationMinutes = Math.max(1, durationSeconds / 60);
             for (String line : startBroadcast) {
                 String replaced = line
+                        .replace("{event_name}", display.getName())
+                        .replace("{event_tag}", display.getShortTag())
                         .replace("{duration}", String.valueOf(durationMinutes))
                         .replace("{drop_mult}", String.valueOf(configManager.getDropMultiplier()))
                         .replace("{exp_mult}", String.valueOf(configManager.getExpMultiplier()))
@@ -98,8 +142,8 @@ public class EventManager {
                     Duration.ofMillis(configManager.getTitleStartFadeOut() * 50L)
             );
             Title title = Title.title(
-                    TextUtil.parse(configManager.getTitleStartTitle()),
-                    TextUtil.parse(configManager.getTitleStartSubtitle()),
+                    TextUtil.parse(display.getTitle()),
+                    TextUtil.parse(display.getSubtitle()),
                     times
             );
             for (Player player : Bukkit.getOnlinePlayers()) {
@@ -120,7 +164,7 @@ public class EventManager {
         }
 
         // Initialize BossBar
-        createBossBar();
+        createBossBar(display);
         updateBossBar(durationSeconds);
 
         saveState();
@@ -132,18 +176,24 @@ public class EventManager {
             return false;
         }
 
+        EventType endedType = this.activeEventType;
         this.eventActive = false;
+        this.activeEventType = null;
         removeBossBar();
 
         scheduleNextEvent();
 
         if (naturally) {
+            ConfigManager.EventDisplayInfo display = configManager.getDisplayInfo(endedType != null ? endedType : EventType.DROPS);
+
             // Broadcast End
             List<String> endBroadcast = configManager.getMessageBroadcastEnd();
             if (endBroadcast != null) {
                 String nextTimeFormatted = TextUtil.formatDuration(getSecondsUntilNextEvent());
                 for (String line : endBroadcast) {
-                    String replaced = line.replace("{next_event_time}", nextTimeFormatted);
+                    String replaced = line
+                            .replace("{event_name}", display.getName())
+                            .replace("{next_event_time}", nextTimeFormatted);
                     TextUtil.broadcast(replaced);
                 }
             }
@@ -204,7 +254,6 @@ public class EventManager {
                         .replace("{time_left}", formattedTime);
                 TextUtil.broadcast(msg);
 
-                // Tick sound
                 if (configManager.isSoundTickEnabled() && configManager.getSoundTickSound() != null) {
                     for (Player player : Bukkit.getOnlinePlayers()) {
                         player.playSound(
@@ -220,7 +269,7 @@ public class EventManager {
         }
     }
 
-    private void createBossBar() {
+    private void createBossBar(ConfigManager.EventDisplayInfo display) {
         if (!configManager.isBossBarEnabled()) {
             return;
         }
@@ -228,7 +277,7 @@ public class EventManager {
 
         bossBar = Bukkit.createBossBar(
                 "",
-                configManager.getBossBarColor(),
+                display.getBarColor(),
                 configManager.getBossBarStyle()
         );
         for (Player player : Bukkit.getOnlinePlayers()) {
@@ -238,9 +287,11 @@ public class EventManager {
     }
 
     private void updateBossBar(long remainingSeconds) {
-        if (bossBar == null || !configManager.isBossBarEnabled()) {
+        if (bossBar == null || !configManager.isBossBarEnabled() || activeEventType == null) {
             return;
         }
+
+        ConfigManager.EventDisplayInfo display = configManager.getDisplayInfo(activeEventType);
 
         double progress = totalDurationSeconds > 0
                 ? Math.min(1.0, Math.max(0.0, (double) remainingSeconds / totalDurationSeconds))
@@ -248,14 +299,14 @@ public class EventManager {
         bossBar.setProgress(progress);
 
         String formattedTime = TextUtil.formatDigitalClock(remainingSeconds);
-        String title = configManager.getBossBarTitle()
+        String rawTitle = display.getBossBarTitle()
                 .replace("{time_left}", formattedTime)
+                .replace("{event_name}", display.getName())
                 .replace("{drop_mult}", String.valueOf(configManager.getDropMultiplier()))
                 .replace("{exp_mult}", String.valueOf(configManager.getExpMultiplier()))
                 .replace("{dmg_mult}", String.valueOf(configManager.getDamageMultiplier()));
 
-        // Bukkit BossBar title expects string with color codes or legacy
-        bossBar.setTitle(net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().serialize(TextUtil.parse(title)));
+        bossBar.setTitle(net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().serialize(TextUtil.parse(rawTitle)));
 
         for (Player player : Bukkit.getOnlinePlayers()) {
             if (!bossBar.getPlayers().contains(player)) {
@@ -291,18 +342,22 @@ public class EventManager {
 
         YamlConfiguration config = YamlConfiguration.loadConfiguration(dataFile);
         boolean wasActive = config.getBoolean("active", false);
+        String typeStr = config.getString("eventType", "");
         long savedEndTime = config.getLong("endTime", 0L);
         long savedTotalDuration = config.getLong("totalDuration", 0L);
         long savedNextTime = config.getLong("nextTime", 0L);
+        this.rotationIndex = config.getInt("rotationIndex", 0);
         long now = System.currentTimeMillis();
 
-        if (wasActive && now < savedEndTime) {
+        EventType type = EventType.fromString(typeStr);
+        if (wasActive && type != null && now < savedEndTime) {
             this.eventActive = true;
+            this.activeEventType = type;
             this.eventEndTime = savedEndTime;
             this.totalDurationSeconds = savedTotalDuration;
-            createBossBar();
+            createBossBar(configManager.getDisplayInfo(type));
             updateBossBar((savedEndTime - now) / 1000L);
-            plugin.getLogger().info("Event boost yang sedang berjalan dipulihkan dari state sebelumnya.");
+            plugin.getLogger().info("Event boost [" + type.name() + "] dipulihkan dari state sebelumnya.");
         } else if (savedNextTime > now) {
             this.nextEventTime = savedNextTime;
             plugin.getLogger().info("Countdown event berikutnya dipulihkan: " + TextUtil.formatDuration((savedNextTime - now) / 1000L));
@@ -316,9 +371,11 @@ public class EventManager {
 
         YamlConfiguration config = new YamlConfiguration();
         config.set("active", eventActive);
+        config.set("eventType", activeEventType != null ? activeEventType.name() : "");
         config.set("endTime", eventEndTime);
         config.set("totalDuration", totalDurationSeconds);
         config.set("nextTime", nextEventTime);
+        config.set("rotationIndex", rotationIndex);
 
         try {
             config.save(dataFile);
@@ -329,6 +386,10 @@ public class EventManager {
 
     public boolean isEventActive() {
         return eventActive;
+    }
+
+    public EventType getActiveEventType() {
+        return activeEventType;
     }
 
     public long getRemainingSeconds() {

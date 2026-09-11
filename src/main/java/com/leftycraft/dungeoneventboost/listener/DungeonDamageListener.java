@@ -3,6 +3,7 @@ package com.leftycraft.dungeoneventboost.listener;
 import com.leftycraft.dungeoneventboost.DungeonEventBoost;
 import com.leftycraft.dungeoneventboost.config.ConfigManager;
 import com.leftycraft.dungeoneventboost.event.EventManager;
+import com.leftycraft.dungeoneventboost.event.EventType;
 import io.lumine.mythic.bukkit.MythicBukkit;
 import io.lumine.mythic.core.mobs.ActiveMob;
 import org.bukkit.Location;
@@ -31,7 +32,7 @@ public class DungeonDamageListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onEntityDamage(EntityDamageByEntityEvent event) {
-        if (!config.isDamageBoostEnabled() || !eventManager.isEventActive()) {
+        if (!config.isDamageBoostEnabled() || !eventManager.isBoostActive(EventType.DAMAGE_DEALT)) {
             return;
         }
 

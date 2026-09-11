@@ -3,7 +3,7 @@
 #              Author: DarkIgnite | Server: Survival Season 7
 # ================================================================
 
-# Pengaturan Interval & Durasi Event
+# Pengaturan Interval & Jadwal Event
 event:
   # Berapa jam sekali event boost terjadi (misal: 6 jam)
   interval-hours: 6.0
@@ -14,78 +14,171 @@ event:
   # Simpan sisa waktu countdown saat server restart agar tidak ter-reset
   save-state-on-restart: true
 
+  # Mode pemilihan event:
+  # ROTATION = Berputar berurutan (Drops -> EXP Skills -> Damage -> Defense -> Economy -> Vanilla EXP -> Swiftness)
+  # RANDOM   = Diundi acak setiap jadwal tiba
+  selection-mode: "ROTATION"
+
+  # Peluang munculnya event MEGA_FRENZY jika menggunakan mode RANDOM (0.1 = 10% chance)
+  mega-frenzy-chance: 0.1
+
+  # Daftar jenis event yang aktif masuk dalam jadwal otomatis:
+  # Pilihan: DROPS, EXP_SKILLS, DAMAGE_DEALT, DEFENSE, ECONOMY, EXP_VANILLA, SWIFTNESS, MEGA_FRENZY
+  enabled-events:
+    - "DROPS"
+    - "EXP_SKILLS"
+    - "DAMAGE_DEALT"
+    - "DEFENSE"
+    - "ECONOMY"
+    - "EXP_VANILLA"
+    - "SWIFTNESS"
+
+# Detail Tampilan & Teks untuk Setiap Jenis Event
+events-info:
+  DROPS:
+    name: "2x Dungeon Mob Drops"
+    short-tag: "<green><bold>2x MOB DROPS</bold></green>"
+    bossbar: "<gradient:#55FF55:#00AA00><bold>⚡ 2x DUNGEON DROPS AKTIF! ⚡</bold></gradient> <gray>(<white>{time_left}</white>)</gray>"
+    bar-color: "GREEN"
+    title: "<gradient:#55FF55:#00AA00><bold>⚡ 2x DUNGEON DROPS! ⚡</bold></gradient>"
+    subtitle: "<green>Semua drop dari mob dungeon MythicMobs digandakan x2!</green>"
+
+  EXP_SKILLS:
+    name: "2x AuraSkills EXP"
+    short-tag: "<aqua><bold>2x AURASKILLS EXP</bold></aqua>"
+    bossbar: "<gradient:#55FFFF:#00AAAA><bold>⚡ 2x AURASKILLS EXP AKTIF! ⚡</bold></gradient> <gray>(<white>{time_left}</white>)</gray>"
+    bar-color: "BLUE"
+    title: "<gradient:#55FFFF:#00AAAA><bold>⚡ 2x AURASKILLS EXP! ⚡</bold></gradient>"
+    subtitle: "<aqua>Dapatkan 2x EXP untuk seluruh aktivitas skill!</aqua>"
+
+  DAMAGE_DEALT:
+    name: "2x Damage ke Mob Dungeon"
+    short-tag: "<red><bold>2x DAMAGE DEALT</bold></red>"
+    bossbar: "<gradient:#FF5555:#AA0000><bold>⚡ 2x DUNGEON DAMAGE AKTIF! ⚡</bold></gradient> <gray>(<white>{time_left}</white>)</gray>"
+    bar-color: "RED"
+    title: "<gradient:#FF5555:#AA0000><bold>⚡ 2x DUNGEON DAMAGE! ⚡</bold></gradient>"
+    subtitle: "<red>Damage seranganmu ke mob dungeon meningkat 2x lipat!</red>"
+
+  DEFENSE:
+    name: "50% Dungeon Defense Boost"
+    short-tag: "<yellow><bold>50% DAMAGE REDUCTION</bold></yellow>"
+    bossbar: "<gradient:#FFFF55:#FFAA00><bold>⚡ 50% DUNGEON DEFENSE AKTIF! ⚡</bold></gradient> <gray>(<white>{time_left}</white>)</gray>"
+    bar-color: "YELLOW"
+    title: "<gradient:#FFFF55:#FFAA00><bold>⚡ 50% DUNGEON DEFENSE! ⚡</bold></gradient>"
+    subtitle: "<yellow>Damage yang kamu terima dari mob dungeon berkurang 50%!</yellow>"
+
+  ECONOMY:
+    name: "2x Jobs & Economy Boost"
+    short-tag: "<gold><bold>2x JOBS & MONEY</bold></gold>"
+    bossbar: "<gradient:#FFAA00:#FF5500><bold>⚡ 2x JOBS & MONEY AKTIF! ⚡</bold></gradient> <gray>(<white>{time_left}</white>)</gray>"
+    bar-color: "YELLOW"
+    title: "<gradient:#FFAA00:#FF5500><bold>⚡ 2x JOBS & ECONOMY! ⚡</bold></gradient>"
+    subtitle: "<gold>Gaji dari Jobs dan drop uang mob digandakan 2x lipat!</gold>"
+
+  EXP_VANILLA:
+    name: "2x Vanilla EXP Boost"
+    short-tag: "<light_purple><bold>2x VANILLA EXP</bold></light_purple>"
+    bossbar: "<gradient:#FF55FF:#AA00AA><bold>⚡ 2x VANILLA EXP AKTIF! ⚡</bold></gradient> <gray>(<white>{time_left}</white>)</gray>"
+    bar-color: "PURPLE"
+    title: "<gradient:#FF55FF:#AA00AA><bold>⚡ 2x VANILLA EXP! ⚡</bold></gradient>"
+    subtitle: "<light_purple>Perolehan bola EXP dari mob dan mining dikali 2!</light_purple>"
+
+  SWIFTNESS:
+    name: "Dungeon Berserk (Speed & Haste)"
+    short-tag: "<aqua><bold>SPEED II & HASTE II</bold></aqua>"
+    bossbar: "<gradient:#55FFFF:#55FF55><bold>⚡ DUNGEON BERSERK AKTIF! ⚡</bold></gradient> <gray>(<white>{time_left}</white>)</gray>"
+    bar-color: "BLUE"
+    title: "<gradient:#55FFFF:#55FF55><bold>⚡ DUNGEON BERSERK! ⚡</bold></gradient>"
+    subtitle: "<aqua>Dapatkan buff Speed II & Haste II saat bertarung di dungeon!</aqua>"
+
+  MEGA_FRENZY:
+    name: "⚡ MEGA ALL-STAR BOOST ⚡"
+    short-tag: "<gradient:#FFAA00:#FF5500><b>SEMUA BOOST AKTIF</b></gradient>"
+    bossbar: "<gradient:#FFAA00:#FF5500><bold>⚡ MEGA ALL-STAR BOOST AKTIF! ⚡</bold></gradient> <gray>(<white>{time_left}</white>)</gray>"
+    bar-color: "PURPLE"
+    title: "<gradient:#FFAA00:#FF5500><bold>⚡ MEGA ALL-STAR BOOST! ⚡</bold></gradient>"
+    subtitle: "<gold><bold>SELURUH EFEK BOOST AKTIF BERSAMAAN!</bold></gold>"
+
 # Pengaturan Fitur Boost
 boosts:
   # 1. MythicMobs Drop Multiplier
   mythicmobs-drops:
     enabled: true
-    # Kelipatan drop mob (2.0 = 2x drop)
     multiplier: 2.0
-    # Hanya berlaku untuk mob dengan Faction tertentu di MythicMobs
     filter-by-faction: true
     allowed-factions:
       - "Dungeon"
-    # Filter berdasarkan nama internal MythicMobs (jika filter-by-mob-types: true)
     filter-by-mob-types: false
     allowed-mob-types: []
-    # Jika true, semua MythicMobs akan di-boost dropnya tanpa memandang Faction/Tipe
     all-mythic-mobs: false
-    # Hanya gandakan drop jika dibunuh oleh player
     require-player-killer: false
 
   # 2. AuraSkills EXP Multiplier
   auraskills-exp:
     enabled: true
-    # Kelipatan EXP AuraSkills (2.0 = 2x EXP)
     multiplier: 2.0
-    # Filter skill tertentu (jika false, semua skill mendapatkan 2x EXP)
     filter-by-skills: false
     allowed-skills: []
 
   # 3. Dungeon MythicMobs Damage Boost
   dungeon-damage:
     enabled: true
-    # Kelipatan damage yang diterima mob dungeon dari serangan player (2.0 = 2x sakit)
     multiplier: 2.0
-    # Hanya berlaku untuk mob dengan Faction tertentu di MythicMobs
     filter-by-faction: true
     allowed-factions:
       - "Dungeon"
     filter-by-mob-types: false
     allowed-mob-types: []
     all-mythic-mobs: false
-    # Efek visual & suara saat memukul mob dungeon dengan damage boost
     effects:
-      particle: "CRIT" # Pilihan: CRIT, SWEEP_ATTACK, DAMAGE_INDICATOR, FLAME, SOUL_FIRE_FLAME, NONE
+      particle: "CRIT"
       particle-count: 8
       play-sound: true
       sound: "ENTITY_PLAYER_ATTACK_CRIT"
       sound-volume: 0.8
       sound-pitch: 1.2
 
+  # 4. Dungeon Defense (Pengurangan Damage dari Mob Dungeon)
+  dungeon-defense:
+    enabled: true
+    # 0.5 = damage dari mob dungeon ke player terpotong 50%
+    multiplier: 0.5
+
+  # 5. Economy (Jobs & Mob Money)
+  economy-jobs:
+    enabled: true
+    multiplier: 2.0
+    double-points: true
+
+  # 6. Vanilla EXP
+  vanilla-exp:
+    enabled: true
+    multiplier: 2.0
+
+  # 7. Dungeon Swiftness
+  dungeon-swiftness:
+    enabled: true
+    duration-seconds: 20
+    # 1 = Speed II, Haste II (amplifier 0 adalah Level 1, amplifier 1 adalah Level 2)
+    speed-amplifier: 1
+    haste-amplifier: 1
+
 # Batasan Dunia (World Whitelist)
 worlds:
-  # Jika true, event boost hanya aktif di dunia yang terdaftar di bawah ini
   whitelist-enabled: false
   allowed-worlds:
     - "world"
     - "world_nether"
     - "world_the_end"
 
-# Pengaturan BossBar selama Event Berlangsung
+# BossBar
 bossbar:
   enabled: true
-  # Judul bossbar (Placeholder: {time_left}, {drop_mult}, {exp_mult}, {dmg_mult})
-  title: "<gradient:#FFAA00:#FF5500><bold>⚡ EVENT BOOST AKTIF! ⚡</bold></gradient> <gray>(<white>{time_left}</white>)</gray> <dark_gray>•</dark_gray> <green><b>2x Drops</b></green> <dark_gray>|</dark_gray> <aqua><b>2x EXP</b></aqua> <dark_gray>|</dark_gray> <red><b>2x Damage</b></red>"
-  # Warna bar: BLUE, GREEN, PINK, PURPLE, RED, WHITE, YELLOW
-  color: "YELLOW"
-  # Gaya bar: SOLID, SEGMENTED_6, SEGMENTED_10, SEGMENTED_12, SEGMENTED_20
   style: "SOLID"
 
 # Peringatan Countdown Sebelum Event Dimulai (dalam detik)
 countdown-warnings:
   enabled: true
-  # Peringatan akan dikirim pada detik-detik berikut sebelum event dimulai
   times-in-seconds:
     - 1800 # 30 menit
     - 900  # 15 menit
@@ -103,8 +196,6 @@ countdown-warnings:
 titles:
   start:
     enabled: true
-    title: "<gradient:#FFAA00:#FF5500><bold>⚡ EVENT BOOST AKTIF! ⚡</bold></gradient>"
-    subtitle: "<green><bold>2x DROPS</bold></green> <dark_gray>•</dark_gray> <aqua><bold>2x SKILLS EXP</bold></aqua> <dark_gray>•</dark_gray> <red><bold>2x DAMAGE</bold></red>"
     fade-in: 10
     stay: 70
     fade-out: 20
@@ -134,49 +225,46 @@ sounds:
     volume: 0.8
     pitch: 1.5
 
-# Pesan-pesan Plugin (Mendukung MiniMessage & Format Warna Legacy '&')
+# Pesan-pesan Plugin (Mendukung MiniMessage, Hex, Legacy '&', dan Tag <center>)
 messages:
   prefix: "<gradient:#FFAA00:#FF5500><bold>[BOOST]</bold></gradient> "
   no-permission: "<red>Kamu tidak memiliki izin untuk menggunakan perintah ini!</red>"
   reloaded: "<green>Konfigurasi <white>DungeonEventBoost</white> berhasil dimuat ulang!</green>"
   already-active: "<red>Event boost sedang berlangsung! Gunakan <yellow>/eb stop</yellow> jika ingin membatalkannya.</red>"
   not-active: "<red>Tidak ada event boost yang sedang aktif saat ini.</red>"
-  started-manual: "<green>Event boost berhasil dimulai secara manual untuk durasi <white>{duration}</white> menit!</green>"
+  started-manual: "<green>Event <white>{event_name}</white> berhasil dimulai secara manual selama <white>{duration}</white> menit!</green>"
   stopped-manual: "<yellow>Event boost berhasil dihentikan oleh admin.</yellow>"
 
   # Pesan Siaran (Broadcast) Mulai Event
   broadcast-start:
     - "<dark_gray><st>━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</st></dark_gray>"
-    - "<center><gradient:#FFAA00:#FF5500><bold>⚡ EVENT BOOST DUNGEON DIMULAI! ⚡</bold></gradient></center>"
-    - "<center><gray>Event akan berlangsung selama <gold><bold>{duration} Menit</bold></gold>!</gray></center>"
+    - "<center><gradient:#FFAA00:#FF5500><bold>⚡ EVENT BOOST DIMULAI! ⚡</bold></gradient></center>"
+    - "<center><gray>Jenis Event: <white><bold>{event_name}</bold></white></gray></center>"
+    - "<center><gray>Durasi: <gold><bold>{duration} Menit</bold></gold></gray></center>"
     - ""
-    - "  <gold>»</gold> <green><bold>2x MOB DROPS</bold></green> <gray>pada semua Dungeon MythicMobs</gray>"
-    - "  <gold>»</gold> <aqua><bold>2x AURA SKILLS EXP</bold></aqua> <gray>untuk seluruh aktivitas grinding</gray>"
-    - "  <gold>»</gold> <red><bold>2x DAMAGE DEALT</bold></red> <gray>menembus mob Dungeon lebih cepat!</gray>"
+    - "  <gold>»</gold> {event_tag}"
     - ""
-    - "<center><yellow>Ayo manfaatkan kesempatan ini dan taklukkan dungeon!</yellow></center>"
+    - "<center><yellow>Ayo manfaatkan kesempatan ini dan ramaikan grinding!</yellow></center>"
     - "<dark_gray><st>━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</st></dark_gray>"
 
   # Pesan Siaran (Broadcast) Berakhir Event
   broadcast-end:
     - "<dark_gray><st>━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</st></dark_gray>"
-    - "<center><red><bold>⚡ EVENT BOOST DUNGEON TELAH BERAKHIR! ⚡</bold></red></center>"
-    - "<center><gray>Event boost 10 menit telah selesai. Terima kasih pejuang!</gray></center>"
+    - "<center><red><bold>⚡ EVENT TELAH BERAKHIR! ⚡</bold></red></center>"
+    - "<center><gray>Event <white>{event_name}</white> telah selesai.</gray></center>"
     - "<center><gray>Event berikutnya akan dimulai dalam: <yellow><bold>{next_event_time}</bold></yellow></gray></center>"
     - "<dark_gray><st>━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</st></dark_gray>"
 
   # Peringatan Countdown
-  broadcast-countdown: "<yellow>⚡ Event Boost Dungeon akan dimulai dalam waktu <gold><bold>{time_left}</bold></gold>!</yellow>"
+  broadcast-countdown: "<yellow>⚡ Event Boost berikutnya akan dimulai dalam waktu <gold><bold>{time_left}</bold></gold>!</yellow>"
 
   # Status Informasi Perintah /eb status
   status-active:
     - "<dark_gray><st>━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</st></dark_gray>"
     - "<gradient:#FFAA00:#FF5500><bold>⚡ STATUS EVENT BOOST: <green>SEDANG AKTIF</green> ⚡</bold></gradient>"
-    - "<gray>Sisa Waktu Event: <yellow><bold>{time_left}</bold></yellow></gray>"
-    - "<gray>Efek Boost Aktif:</gray>"
-    - "  <green>• Drop Multiplier:</green> <white>{drop_mult}x</white>"
-    - "  <aqua>• Skills EXP Multiplier:</aqua> <white>{exp_mult}x</white>"
-    - "  <red>• Damage Multiplier:</red> <white>{dmg_mult}x</white>"
+    - "<gray>Jenis Event: <white><bold>{event_name}</bold></white></gray>"
+    - "<gray>Sisa Waktu: <yellow><bold>{time_left}</bold></yellow></gray>"
+    - "<gray>Efek:</gray> {event_tag}"
     - "<dark_gray><st>━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</st></dark_gray>"
 
   status-inactive:
@@ -191,7 +279,8 @@ messages:
     - "<dark_gray><st>━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</st></dark_gray>"
     - "<gradient:#FFAA00:#FF5500><bold>⚡ DungeonEventBoost Commands ⚡</bold></gradient>"
     - "<gold>/eb status</gold> <gray>- Cek status dan sisa waktu event</gray>"
-    - "<gold>/eb start [menit]</gold> <gray>- Memulai event boost secara manual (Admin)</gray>"
+    - "<gold>/eb start [jenis] [menit]</gold> <gray>- Memulai event tertentu secara manual</gray>"
+    - "<gray>  Pilihan jenis: drops, exp_skills, damage, defense, economy, exp_vanilla, swiftness, all</gray>"
     - "<gold>/eb stop</gold> <gray>- Menghentikan event boost yang sedang aktif (Admin)</gray>"
     - "<gold>/eb reload</gold> <gray>- Memuat ulang konfigurasi plugin (Admin)</gray>"
     - "<dark_gray><st>━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</st></dark_gray>"

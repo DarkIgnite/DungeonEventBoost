@@ -3,11 +3,13 @@ version: '${project.version}'
 main: com.leftycraft.dungeoneventboost.DungeonEventBoost
 api-version: '1.21'
 author: DarkIgnite
-description: Periodic boost event for MythicMobs Dungeons (2x Drops, 2x Damage) and AuraSkills (2x EXP)
+description: Periodic boost event system for MythicMobs Dungeons, AuraSkills, Jobs, and Vanilla stats
 softdepend:
   - MythicMobs
   - AuraSkills
   - PlaceholderAPI
+  - Jobs
+  - Vault
 commands:
   dungeoneventboost:
     description: Main command for DungeonEventBoost

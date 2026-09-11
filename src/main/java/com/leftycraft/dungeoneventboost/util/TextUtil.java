@@ -19,19 +19,94 @@ public final class TextUtil {
             .build();
 
     private static final Pattern HEX_PATTERN = Pattern.compile("&#([a-fA-F0-9]{6})|<#([a-fA-F0-9]{6})>");
+    private static final Pattern CENTER_PATTERN = Pattern.compile("(?i)<center>(.*?)</center>");
+    private static final Pattern STRIP_TAGS_PATTERN = Pattern.compile("<[^>]+>|&[0-9a-fk-orA-FK-OR]|§[0-9a-fk-orA-FK-OR]");
+
+    private static final int CHAT_CENTER_PX = 154; // Half of standard MC chat width (320px) with margins
+    private static final int SPACE_PX = 4;
 
     private TextUtil() {}
 
     /**
-     * Parse text supporting MiniMessage tags, legacy color codes (&a, &l), and hex codes (&#RRGGBB or <#RRGGBB>).
+     * Center text matching <center>...</center> using Minecraft font character widths.
+     */
+    public static String centerText(String text) {
+        if (text == null || text.isEmpty()) {
+            return "";
+        }
+
+        Matcher matcher = CENTER_PATTERN.matcher(text);
+        if (!matcher.find()) {
+            // Also clean up any unclosed/rogue <center> or </center> tags
+            return text.replaceAll("(?i)</?center>", "");
+        }
+
+        StringBuilder sb = new StringBuilder();
+        matcher.reset();
+        while (matcher.find()) {
+            String content = matcher.group(1);
+            String plain = STRIP_TAGS_PATTERN.matcher(content).replaceAll("");
+
+            int textPx = 0;
+            boolean bold = content.toLowerCase().contains("<bold>") || content.toLowerCase().contains("<b>") || content.contains("&l");
+            for (char c : plain.toCharArray()) {
+                textPx += getCharWidth(c, bold);
+            }
+
+            int halfDiff = CHAT_CENTER_PX - (textPx / 2);
+            if (halfDiff <= 0) {
+                matcher.appendReplacement(sb, Matcher.quoteReplacement(content));
+            } else {
+                int spaces = halfDiff / SPACE_PX;
+                StringBuilder padding = new StringBuilder();
+                for (int i = 0; i < spaces; i++) {
+                    padding.append(" ");
+                }
+                matcher.appendReplacement(sb, Matcher.quoteReplacement(padding + content));
+            }
+        }
+        matcher.appendTail(sb);
+        return sb.toString().replaceAll("(?i)</?center>", "");
+    }
+
+    private static int getCharWidth(char c, boolean bold) {
+        int width;
+        switch (c) {
+            case 'i': case '!': case ';': case ':': case '|': case '.': case ',': case '\'':
+                width = 1;
+                break;
+            case 'l': case '`':
+                width = 2;
+                break;
+            case 'I': case '[': case ']': case 't': case ' ':
+                width = 3;
+                break;
+            case 'k': case 'f': case '*': case '(': case ')': case '{': case '}': case '<': case '>':
+                width = 4;
+                break;
+            case '@': case '~':
+                width = 6;
+                break;
+            default:
+                width = 5;
+                break;
+        }
+        return bold ? width + 1 : width;
+    }
+
+    /**
+     * Parse text supporting MiniMessage tags, legacy color codes (&a, &l), hex codes, and <center> tags.
      */
     public static Component parse(String text) {
         if (text == null || text.isEmpty()) {
             return Component.empty();
         }
 
+        // Process <center> tags first
+        String processed = centerText(text);
+
         // Convert &#RRGGBB and <#RRGGBB> to MiniMessage format <#RRGGBB>
-        Matcher matcher = HEX_PATTERN.matcher(text);
+        Matcher matcher = HEX_PATTERN.matcher(processed);
         StringBuilder sb = new StringBuilder();
         while (matcher.find()) {
             String hex = matcher.group(1) != null ? matcher.group(1) : matcher.group(2);
@@ -40,9 +115,7 @@ public final class TextUtil {
         matcher.appendTail(sb);
         String converted = sb.toString();
 
-        // If it contains legacy & color codes, convert them to MiniMessage compatible or deserialize
         if (converted.contains("&")) {
-            // Deserialize legacy then serialize back, or parse legacy
             return LEGACY_SERIALIZER.deserialize(converted.replace('§', '&'));
         }
 
@@ -65,9 +138,6 @@ public final class TextUtil {
         }
     }
 
-    /**
-     * Format seconds into readable string (e.g., "5j 23m 10d" or "10m 00d")
-     */
     public static String formatDuration(long totalSeconds) {
         if (totalSeconds <= 0) {
             return "0 detik";
@@ -91,9 +161,6 @@ public final class TextUtil {
         return builder.toString().trim();
     }
 
-    /**
-     * Format seconds into mm:ss or hh:mm:ss
-     */
     public static String formatDigitalClock(long totalSeconds) {
         if (totalSeconds <= 0) {
             return "00:00";

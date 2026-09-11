@@ -3,10 +3,7 @@ package com.leftycraft.dungeoneventboost;
 import com.leftycraft.dungeoneventboost.command.EventBoostCommand;
 import com.leftycraft.dungeoneventboost.config.ConfigManager;
 import com.leftycraft.dungeoneventboost.event.EventManager;
-import com.leftycraft.dungeoneventboost.listener.AuraSkillsExpListener;
-import com.leftycraft.dungeoneventboost.listener.DungeonDamageListener;
-import com.leftycraft.dungeoneventboost.listener.MythicMobsDropListener;
-import com.leftycraft.dungeoneventboost.listener.PlayerConnectionListener;
+import com.leftycraft.dungeoneventboost.listener.*;
 import com.leftycraft.dungeoneventboost.placeholder.EventBoostExpansion;
 import org.bukkit.Bukkit;
 import org.bukkit.command.PluginCommand;
@@ -37,14 +34,17 @@ public final class DungeonEventBoost extends JavaPlugin {
         // Register Listeners
         PluginManager pm = getServer().getPluginManager();
         pm.registerEvents(new PlayerConnectionListener(this), this);
+        pm.registerEvents(new VanillaExpListener(this), this);
 
         // MythicMobs Hook
         if (pm.isPluginEnabled("MythicMobs")) {
             pm.registerEvents(new MythicMobsDropListener(this), this);
             pm.registerEvents(new DungeonDamageListener(this), this);
-            getLogger().info("Berhasil terhubung dengan MythicMobs (Drop & Damage Boost aktif).");
+            pm.registerEvents(new DungeonDefenseListener(this), this);
+            pm.registerEvents(new DungeonSwiftnessListener(this), this);
+            getLogger().info("Berhasil terhubung dengan MythicMobs (Drop, Damage, Defense & Swiftness aktif).");
         } else {
-            getLogger().warning("MythicMobs tidak ditemukan! Fitur MythicMobs boost tidak akan berjalan.");
+            getLogger().warning("MythicMobs tidak ditemukan! Fitur MythicMobs dungeon boost tidak akan berjalan.");
         }
 
         // AuraSkills Hook
@@ -53,6 +53,12 @@ public final class DungeonEventBoost extends JavaPlugin {
             getLogger().info("Berhasil terhubung dengan AuraSkills (2x EXP Boost aktif).");
         } else {
             getLogger().warning("AuraSkills tidak ditemukan! Fitur AuraSkills EXP boost tidak akan berjalan.");
+        }
+
+        // Jobs Hook
+        if (pm.isPluginEnabled("Jobs")) {
+            pm.registerEvents(new JobsEconomyListener(this), this);
+            getLogger().info("Berhasil terhubung dengan Jobs (2x Economy & Jobs Payment aktif).");
         }
 
         // PlaceholderAPI Hook
@@ -78,6 +84,7 @@ public final class DungeonEventBoost extends JavaPlugin {
         getLogger().info("  DungeonEventBoost v" + getDescription().getVersion() + " telah aktif!");
         getLogger().info("  Interval: " + configManager.getIntervalHours() + " Jam");
         getLogger().info("  Durasi: " + configManager.getDurationMinutes() + " Menit");
+        getLogger().info("  Mode: " + configManager.getSelectionMode());
         getLogger().info("=========================================");
     }
 

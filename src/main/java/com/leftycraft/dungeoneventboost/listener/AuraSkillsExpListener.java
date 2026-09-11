@@ -3,6 +3,7 @@ package com.leftycraft.dungeoneventboost.listener;
 import com.leftycraft.dungeoneventboost.DungeonEventBoost;
 import com.leftycraft.dungeoneventboost.config.ConfigManager;
 import com.leftycraft.dungeoneventboost.event.EventManager;
+import com.leftycraft.dungeoneventboost.event.EventType;
 import dev.aurelium.auraskills.api.event.skill.XpGainEvent;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -23,7 +24,7 @@ public class AuraSkillsExpListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onXpGain(XpGainEvent event) {
-        if (!config.isExpBoostEnabled() || !eventManager.isEventActive()) {
+        if (!config.isExpBoostEnabled() || !eventManager.isBoostActive(EventType.EXP_SKILLS)) {
             return;
         }
 

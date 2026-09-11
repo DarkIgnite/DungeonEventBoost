@@ -3,6 +3,7 @@ package com.leftycraft.dungeoneventboost.listener;
 import com.leftycraft.dungeoneventboost.DungeonEventBoost;
 import com.leftycraft.dungeoneventboost.config.ConfigManager;
 import com.leftycraft.dungeoneventboost.event.EventManager;
+import com.leftycraft.dungeoneventboost.event.EventType;
 import io.lumine.mythic.bukkit.events.MythicMobDeathEvent;
 import io.lumine.mythic.core.mobs.ActiveMob;
 import org.bukkit.World;
@@ -28,7 +29,7 @@ public class MythicMobsDropListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onMythicMobDeath(MythicMobDeathEvent event) {
-        if (!config.isDropBoostEnabled() || !eventManager.isEventActive()) {
+        if (!config.isDropBoostEnabled() || !eventManager.isBoostActive(EventType.DROPS)) {
             return;
         }
 

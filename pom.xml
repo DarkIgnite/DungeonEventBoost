@@ -68,6 +68,24 @@
             <systemPath>${project.basedir}/libs/PlaceholderAPI-2.12.3.jar</systemPath>
         </dependency>
 
+        <!-- Jobs API -->
+        <dependency>
+            <groupId>com.gamingmesh.jobs</groupId>
+            <artifactId>Jobs</artifactId>
+            <version>5.2.6.6</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/libs/Jobs5.2.6.6.jar</systemPath>
+        </dependency>
+
+        <!-- Vault -->
+        <dependency>
+            <groupId>com.github.MilkBowl</groupId>
+            <artifactId>VaultAPI</artifactId>
+            <version>1.7</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/libs/Vault.jar</systemPath>
+        </dependency>
+
         <!-- JetBrains Annotations -->
         <dependency>
             <groupId>org.jetbrains</groupId>

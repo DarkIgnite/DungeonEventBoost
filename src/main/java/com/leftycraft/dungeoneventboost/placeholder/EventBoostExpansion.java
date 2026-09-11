@@ -3,6 +3,7 @@ package com.leftycraft.dungeoneventboost.placeholder;
 import com.leftycraft.dungeoneventboost.DungeonEventBoost;
 import com.leftycraft.dungeoneventboost.config.ConfigManager;
 import com.leftycraft.dungeoneventboost.event.EventManager;
+import com.leftycraft.dungeoneventboost.event.EventType;
 import com.leftycraft.dungeoneventboost.util.TextUtil;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import org.bukkit.OfflinePlayer;
@@ -49,6 +50,12 @@ public class EventBoostExpansion extends PlaceholderExpansion {
                 return eventManager.isEventActive() ? "AKTIF" : "TIDAK_AKTIF";
             case "is_active":
                 return String.valueOf(eventManager.isEventActive());
+            case "event_type":
+                return eventManager.getActiveEventType() != null ? eventManager.getActiveEventType().name() : "NONE";
+            case "event_name":
+                return eventManager.getActiveEventType() != null
+                        ? configManager.getDisplayInfo(eventManager.getActiveEventType()).getName()
+                        : "-";
             case "time_left":
                 return eventManager.isEventActive()
                         ? TextUtil.formatDigitalClock(eventManager.getRemainingSeconds())
@@ -71,6 +78,12 @@ public class EventBoostExpansion extends PlaceholderExpansion {
                 return String.valueOf(configManager.getExpMultiplier());
             case "damage_multiplier":
                 return String.valueOf(configManager.getDamageMultiplier());
+            case "defense_multiplier":
+                return String.valueOf(configManager.getDefenseMultiplier());
+            case "economy_multiplier":
+                return String.valueOf(configManager.getEconomyMultiplier());
+            case "vanilla_exp_multiplier":
+                return String.valueOf(configManager.getVanillaExpMultiplier());
             case "interval":
                 return String.valueOf(configManager.getIntervalHours());
             case "duration":

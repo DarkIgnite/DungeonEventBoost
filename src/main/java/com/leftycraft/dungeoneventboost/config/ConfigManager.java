@@ -1,29 +1,29 @@
 package com.leftycraft.dungeoneventboost.config;
 
 import com.leftycraft.dungeoneventboost.DungeonEventBoost;
+import com.leftycraft.dungeoneventboost.event.EventType;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarStyle;
 import org.bukkit.configuration.file.FileConfiguration;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class ConfigManager {
 
     private final DungeonEventBoost plugin;
 
-    // Event Timing
+    // Event Scheduling
     private double intervalHours;
     private double durationMinutes;
     private boolean autoStartTimer;
     private boolean saveStateOnRestart;
+    private String selectionMode; // ROTATION or RANDOM
+    private List<EventType> enabledEvents;
+    private double megaFrenzyChance;
 
-    // MythicMobs Drops
+    // Boost 1: Drops
     private boolean dropBoostEnabled;
     private double dropMultiplier;
     private boolean dropFilterByFaction;
@@ -33,13 +33,13 @@ public class ConfigManager {
     private boolean dropAllMythicMobs;
     private boolean dropRequirePlayerKiller;
 
-    // AuraSkills EXP
+    // Boost 2: AuraSkills EXP
     private boolean expBoostEnabled;
     private double expMultiplier;
     private boolean expFilterBySkills;
     private Set<String> expAllowedSkills;
 
-    // Dungeon Damage
+    // Boost 3: Dungeon Damage
     private boolean damageBoostEnabled;
     private double damageMultiplier;
     private boolean damageFilterByFaction;
@@ -54,24 +54,37 @@ public class ConfigManager {
     private float damageSoundVolume;
     private float damageSoundPitch;
 
+    // Boost 4: Dungeon Defense (Damage Reduction)
+    private boolean defenseBoostEnabled;
+    private double defenseMultiplier;
+
+    // Boost 5: Economy (Jobs & Vault)
+    private boolean economyBoostEnabled;
+    private double economyMultiplier;
+    private boolean economyDoublePoints;
+
+    // Boost 6: Vanilla EXP
+    private boolean vanillaExpBoostEnabled;
+    private double vanillaExpMultiplier;
+
+    // Boost 7: Swiftness (Speed + Haste)
+    private boolean swiftnessBoostEnabled;
+    private int swiftnessDurationSeconds;
+    private int swiftnessSpeedAmplifier;
+    private int swiftnessHasteAmplifier;
+
     // Worlds Whitelist
     private boolean worldWhitelistEnabled;
     private Set<String> allowedWorlds;
 
-    // BossBar
+    // BossBar & Warnings
     private boolean bossBarEnabled;
-    private String bossBarTitle;
-    private BarColor bossBarColor;
     private BarStyle bossBarStyle;
-
-    // Countdown Warnings
     private boolean countdownWarningsEnabled;
     private List<Long> countdownWarningSeconds;
 
-    // Titles
+    // Titles general
     private boolean titleStartEnabled;
-    private String titleStartTitle;
-    private String titleStartSubtitle;
     private int titleStartFadeIn;
     private int titleStartStay;
     private int titleStartFadeOut;
@@ -114,6 +127,9 @@ public class ConfigManager {
     private List<String> messageStatusInactive;
     private List<String> messageHelp;
 
+    // Event Info Map
+    private final Map<EventType, EventDisplayInfo> eventDisplayMap = new EnumMap<>(EventType.class);
+
     public ConfigManager(DungeonEventBoost plugin) {
         this.plugin = plugin;
     }
@@ -123,13 +139,28 @@ public class ConfigManager {
         plugin.reloadConfig();
         FileConfiguration config = plugin.getConfig();
 
-        // Event Timing
+        // Event Timing & Mode
         intervalHours = config.getDouble("event.interval-hours", 6.0);
         durationMinutes = config.getDouble("event.duration-minutes", 10.0);
         autoStartTimer = config.getBoolean("event.auto-start-timer", true);
         saveStateOnRestart = config.getBoolean("event.save-state-on-restart", true);
+        selectionMode = config.getString("event.selection-mode", "ROTATION").toUpperCase();
+        megaFrenzyChance = config.getDouble("event.mega-frenzy-chance", 0.1);
 
-        // Boost 1: MythicMobs Drops
+        List<String> eventNames = config.getStringList("event.enabled-events");
+        List<EventType> enabledList = new ArrayList<>();
+        for (String name : eventNames) {
+            EventType type = EventType.fromString(name);
+            if (type != null && !enabledList.contains(type)) {
+                enabledList.add(type);
+            }
+        }
+        if (enabledList.isEmpty()) {
+            enabledList.addAll(Arrays.asList(EventType.values()));
+        }
+        this.enabledEvents = enabledList;
+
+        // Boost 1: Drops
         dropBoostEnabled = config.getBoolean("boosts.mythicmobs-drops.enabled", true);
         dropMultiplier = config.getDouble("boosts.mythicmobs-drops.multiplier", 2.0);
         dropFilterByFaction = config.getBoolean("boosts.mythicmobs-drops.filter-by-faction", true);
@@ -162,17 +193,33 @@ public class ConfigManager {
         damageSoundVolume = (float) config.getDouble("boosts.dungeon-damage.effects.sound-volume", 0.8);
         damageSoundPitch = (float) config.getDouble("boosts.dungeon-damage.effects.sound-pitch", 1.2);
 
+        // Boost 4: Defense
+        defenseBoostEnabled = config.getBoolean("boosts.dungeon-defense.enabled", true);
+        defenseMultiplier = config.getDouble("boosts.dungeon-defense.multiplier", 0.5);
+
+        // Boost 5: Economy
+        economyBoostEnabled = config.getBoolean("boosts.economy-jobs.enabled", true);
+        economyMultiplier = config.getDouble("boosts.economy-jobs.multiplier", 2.0);
+        economyDoublePoints = config.getBoolean("boosts.economy-jobs.double-points", true);
+
+        // Boost 6: Vanilla EXP
+        vanillaExpBoostEnabled = config.getBoolean("boosts.vanilla-exp.enabled", true);
+        vanillaExpMultiplier = config.getDouble("boosts.vanilla-exp.multiplier", 2.0);
+
+        // Boost 7: Swiftness
+        swiftnessBoostEnabled = config.getBoolean("boosts.dungeon-swiftness.enabled", true);
+        swiftnessDurationSeconds = config.getInt("boosts.dungeon-swiftness.duration-seconds", 20);
+        swiftnessSpeedAmplifier = config.getInt("boosts.dungeon-swiftness.speed-amplifier", 1);
+        swiftnessHasteAmplifier = config.getInt("boosts.dungeon-swiftness.haste-amplifier", 1);
+
         // Worlds Whitelist
         worldWhitelistEnabled = config.getBoolean("worlds.whitelist-enabled", false);
         allowedWorlds = toLowerSet(config.getStringList("worlds.allowed-worlds"));
 
-        // BossBar
+        // BossBar & Warnings
         bossBarEnabled = config.getBoolean("bossbar.enabled", true);
-        bossBarTitle = config.getString("bossbar.title", "<gradient:#FFAA00:#FF5500><bold>⚡ EVENT BOOST AKTIF! ⚡</bold></gradient> <gray>(<white>{time_left}</white>)</gray>");
-        bossBarColor = parseBarColor(config.getString("bossbar.color", "YELLOW"));
         bossBarStyle = parseBarStyle(config.getString("bossbar.style", "SOLID"));
 
-        // Countdown Warnings
         countdownWarningsEnabled = config.getBoolean("countdown-warnings.enabled", true);
         List<Long> secondsList = new ArrayList<>();
         for (int sec : config.getIntegerList("countdown-warnings.times-in-seconds")) {
@@ -181,10 +228,8 @@ public class ConfigManager {
         Collections.sort(secondsList, Collections.reverseOrder());
         countdownWarningSeconds = secondsList;
 
-        // Titles
+        // Titles general
         titleStartEnabled = config.getBoolean("titles.start.enabled", true);
-        titleStartTitle = config.getString("titles.start.title", "<gradient:#FFAA00:#FF5500><bold>⚡ EVENT BOOST AKTIF! ⚡</bold></gradient>");
-        titleStartSubtitle = config.getString("titles.start.subtitle", "<green><bold>2x DROPS</bold></green> <dark_gray>•</dark_gray> <aqua><bold>2x SKILLS EXP</bold></aqua> <dark_gray>•</dark_gray> <red><bold>2x DAMAGE</bold></red>");
         titleStartFadeIn = config.getInt("titles.start.fade-in", 10);
         titleStartStay = config.getInt("titles.start.stay", 70);
         titleStartFadeOut = config.getInt("titles.start.fade-out", 20);
@@ -218,7 +263,7 @@ public class ConfigManager {
         messageReloaded = config.getString("messages.reloaded", "<green>Konfigurasi berhasil dimuat ulang!</green>");
         messageAlreadyActive = config.getString("messages.already-active", "<red>Event boost sedang berlangsung!</red>");
         messageNotActive = config.getString("messages.not-active", "<red>Tidak ada event boost yang sedang aktif.</red>");
-        messageStartedManual = config.getString("messages.started-manual", "<green>Event boost dimulai secara manual!</green>");
+        messageStartedManual = config.getString("messages.started-manual", "<green>Event boost <white>{event_name}</white> dimulai secara manual selama <white>{duration}</white> menit!</green>");
         messageStoppedManual = config.getString("messages.stopped-manual", "<yellow>Event boost dihentikan.</yellow>");
         messageBroadcastStart = config.getStringList("messages.broadcast-start");
         messageBroadcastEnd = config.getStringList("messages.broadcast-end");
@@ -226,40 +271,54 @@ public class ConfigManager {
         messageStatusActive = config.getStringList("messages.status-active");
         messageStatusInactive = config.getStringList("messages.status-inactive");
         messageHelp = config.getStringList("messages.help");
+
+        // Load Event Display Info
+        loadEventDisplays(config);
+    }
+
+    private void loadEventDisplays(FileConfiguration config) {
+        eventDisplayMap.clear();
+        for (EventType type : EventType.values()) {
+            String path = "events-info." + type.name();
+            String name = config.getString(path + ".name", type.getDisplayName());
+            String shortTag = config.getString(path + ".short-tag", type.getShortTag());
+            String bossBar = config.getString(path + ".bossbar", "<gradient:#FFAA00:#FF5500><bold>⚡ " + name + " ⚡</bold></gradient> <gray>(<white>{time_left}</white>)</gray>");
+            BarColor color = parseBarColor(config.getString(path + ".bar-color", type.getDefaultBarColor().name()));
+            String title = config.getString(path + ".title", "<gradient:#FFAA00:#FF5500><bold>⚡ " + name + " ⚡</bold></gradient>");
+            String subtitle = config.getString(path + ".subtitle", shortTag);
+
+            eventDisplayMap.put(type, new EventDisplayInfo(name, shortTag, bossBar, color, title, subtitle));
+        }
+    }
+
+    public EventDisplayInfo getDisplayInfo(EventType type) {
+        return eventDisplayMap.getOrDefault(type, new EventDisplayInfo(type.getDisplayName(), type.getShortTag(), type.getDisplayName(), type.getDefaultBarColor(), type.getDisplayName(), type.getShortTag()));
     }
 
     private Set<String> toLowerSet(List<String> list) {
         Set<String> set = new HashSet<>();
         if (list != null) {
             for (String item : list) {
-                if (item != null) {
-                    set.add(item.trim().toLowerCase());
-                }
+                if (item != null) set.add(item.trim().toLowerCase());
             }
         }
         return set;
     }
 
     private Sound parseSound(String name, Sound def) {
-        if (name == null || name.isEmpty() || name.equalsIgnoreCase("NONE")) {
-            return def;
-        }
+        if (name == null || name.isEmpty() || name.equalsIgnoreCase("NONE")) return def;
         try {
             return Sound.valueOf(name.toUpperCase());
         } catch (IllegalArgumentException e) {
-            plugin.getLogger().warning("Unknown sound name in config: " + name + ", fallback to " + def.name());
             return def;
         }
     }
 
     private Particle parseParticle(String name, Particle def) {
-        if (name == null || name.isEmpty() || name.equalsIgnoreCase("NONE")) {
-            return null;
-        }
+        if (name == null || name.isEmpty() || name.equalsIgnoreCase("NONE")) return null;
         try {
             return Particle.valueOf(name.toUpperCase());
         } catch (IllegalArgumentException e) {
-            plugin.getLogger().warning("Unknown particle name in config: " + name + ", fallback to " + def.name());
             return def;
         }
     }
@@ -287,6 +346,9 @@ public class ConfigManager {
     public long getDurationSeconds() { return (long) (durationMinutes * 60); }
     public boolean isAutoStartTimer() { return autoStartTimer; }
     public boolean isSaveStateOnRestart() { return saveStateOnRestart; }
+    public String getSelectionMode() { return selectionMode; }
+    public List<EventType> getEnabledEvents() { return enabledEvents; }
+    public double getMegaFrenzyChance() { return megaFrenzyChance; }
 
     public boolean isDropBoostEnabled() { return dropBoostEnabled; }
     public double getDropMultiplier() { return dropMultiplier; }
@@ -316,20 +378,31 @@ public class ConfigManager {
     public float getDamageSoundVolume() { return damageSoundVolume; }
     public float getDamageSoundPitch() { return damageSoundPitch; }
 
+    public boolean isDefenseBoostEnabled() { return defenseBoostEnabled; }
+    public double getDefenseMultiplier() { return defenseMultiplier; }
+
+    public boolean isEconomyBoostEnabled() { return economyBoostEnabled; }
+    public double getEconomyMultiplier() { return economyMultiplier; }
+    public boolean isEconomyDoublePoints() { return economyDoublePoints; }
+
+    public boolean isVanillaExpBoostEnabled() { return vanillaExpBoostEnabled; }
+    public double getVanillaExpMultiplier() { return vanillaExpMultiplier; }
+
+    public boolean isSwiftnessBoostEnabled() { return swiftnessBoostEnabled; }
+    public int getSwiftnessDurationSeconds() { return swiftnessDurationSeconds; }
+    public int getSwiftnessSpeedAmplifier() { return swiftnessSpeedAmplifier; }
+    public int getSwiftnessHasteAmplifier() { return swiftnessHasteAmplifier; }
+
     public boolean isWorldWhitelistEnabled() { return worldWhitelistEnabled; }
     public Set<String> getAllowedWorlds() { return allowedWorlds; }
 
     public boolean isBossBarEnabled() { return bossBarEnabled; }
-    public String getBossBarTitle() { return bossBarTitle; }
-    public BarColor getBossBarColor() { return bossBarColor; }
     public BarStyle getBossBarStyle() { return bossBarStyle; }
 
     public boolean isCountdownWarningsEnabled() { return countdownWarningsEnabled; }
     public List<Long> getCountdownWarningSeconds() { return countdownWarningSeconds; }
 
     public boolean isTitleStartEnabled() { return titleStartEnabled; }
-    public String getTitleStartTitle() { return titleStartTitle; }
-    public String getTitleStartSubtitle() { return titleStartSubtitle; }
     public int getTitleStartFadeIn() { return titleStartFadeIn; }
     public int getTitleStartStay() { return titleStartStay; }
     public int getTitleStartFadeOut() { return titleStartFadeOut; }
@@ -369,4 +442,29 @@ public class ConfigManager {
     public List<String> getMessageStatusActive() { return messageStatusActive; }
     public List<String> getMessageStatusInactive() { return messageStatusInactive; }
     public List<String> getMessageHelp() { return messageHelp; }
+
+    public static class EventDisplayInfo {
+        private final String name;
+        private final String shortTag;
+        private final String bossBarTitle;
+        private final BarColor barColor;
+        private final String title;
+        private final String subtitle;
+
+        public EventDisplayInfo(String name, String shortTag, String bossBarTitle, BarColor barColor, String title, String subtitle) {
+            this.name = name;
+            this.shortTag = shortTag;
+            this.bossBarTitle = bossBarTitle;
+            this.barColor = barColor;
+            this.title = title;
+            this.subtitle = subtitle;
+        }
+
+        public String getName() { return name; }
+        public String getShortTag() { return shortTag; }
+        public String getBossBarTitle() { return bossBarTitle; }
+        public BarColor getBarColor() { return barColor; }
+        public String getTitle() { return title; }
+        public String getSubtitle() { return subtitle; }
+    }
 }
