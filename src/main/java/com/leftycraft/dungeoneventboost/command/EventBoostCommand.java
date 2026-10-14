@@ -142,7 +142,8 @@ public class EventBoostCommand implements CommandExecutor, TabCompleter {
                         .replace("{time_left}", TextUtil.formatDuration(eventManager.getRemainingSeconds()))
                         .replace("{drop_mult}", String.valueOf(configManager.getDropMultiplier()))
                         .replace("{exp_mult}", String.valueOf(configManager.getExpMultiplier()))
-                        .replace("{dmg_mult}", String.valueOf(configManager.getDamageMultiplier()));
+                        .replace("{dmg_mult}", String.valueOf(configManager.getDamageMultiplier()))
+                        .replace("{koki_mult}", String.valueOf((int) eventManager.getKokiMbgMultiplier()));
                 TextUtil.sendMessage(sender, replaced);
             }
         } else {
@@ -175,7 +176,7 @@ public class EventBoostCommand implements CommandExecutor, TabCompleter {
         }
 
         if (args.length == 2 && args[0].equalsIgnoreCase("start") && sender.hasPermission("dungeoneventboost.admin")) {
-            List<String> options = new ArrayList<>(Arrays.asList("drops", "exp_skills", "damage", "defense", "economy", "exp_vanilla", "swiftness", "all", "5", "10", "15", "30"));
+            List<String> options = new ArrayList<>(Arrays.asList("drops", "exp_skills", "damage", "defense", "economy", "exp_vanilla", "swiftness", "all", "koki_5x", "koki_10x", "5", "10", "15", "30"));
             List<String> completions = new ArrayList<>();
             String prefix = args[1].toLowerCase();
             for (String opt : options) {

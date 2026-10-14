@@ -23,7 +23,7 @@ event:
   mega-frenzy-chance: 0.1
 
   # Daftar jenis event yang aktif masuk dalam jadwal otomatis:
-  # Pilihan: DROPS, EXP_SKILLS, DAMAGE_DEALT, DEFENSE, ECONOMY, EXP_VANILLA, SWIFTNESS, MEGA_FRENZY
+  # Pilihan: DROPS, EXP_SKILLS, DAMAGE_DEALT, DEFENSE, ECONOMY, EXP_VANILLA, SWIFTNESS, MEGA_FRENZY, KOKI_MBG_5X, KOKI_MBG_10X
   enabled-events:
     - "DROPS"
     - "EXP_SKILLS"
@@ -99,6 +99,22 @@ events-info:
     title: "<gradient:#FFAA00:#FF5500><bold>⚡ MEGA ALL-STAR BOOST! ⚡</bold></gradient>"
     subtitle: "<gold><bold>SELURUH EFEK BOOST AKTIF BERSAMAAN!</bold></gold>"
 
+  KOKI_MBG_5X:
+    name: "5x Money Koki MBG Boost"
+    short-tag: "<gradient:#FFAA00:#FFD700><bold>5x MONEY KOKI MBG</bold></gradient>"
+    bossbar: "<gradient:#FFAA00:#FFD700><bold>⚡ 5x MONEY KOKI MBG AKTIF! ⚡</bold></gradient> <gray>(<white>{time_left}</white>)</gray>"
+    bar-color: "YELLOW"
+    title: "<gradient:#FFAA00:#FFD700><bold>⚡ 5x MONEY KOKI MBG! ⚡</bold></gradient>"
+    subtitle: "<gold>Pendapatan uang dari kasir Dapur Koki MBG digandakan 5x lipat!</gold>"
+
+  KOKI_MBG_10X:
+    name: "10x Money Koki MBG Boost"
+    short-tag: "<gradient:#FF0844:#FFB199><bold>10x MONEY KOKI MBG</bold></gradient>"
+    bossbar: "<gradient:#FF0844:#FFB199><bold>⚡ 10x MONEY KOKI MBG AKTIF! ⚡</bold></gradient> <gray>(<white>{time_left}</white>)</gray>"
+    bar-color: "RED"
+    title: "<gradient:#FF0844:#FFB199><bold>⚡ 10x MONEY KOKI MBG! ⚡</bold></gradient>"
+    subtitle: "<red>Pendapatan uang dari kasir Dapur Koki MBG digandakan 10x lipat!</red>"
+
 # Pengaturan Fitur Boost
 boosts:
   # 1. MythicMobs Drop Multiplier
@@ -162,6 +178,13 @@ boosts:
     # 1 = Speed II, Haste II (amplifier 0 adalah Level 1, amplifier 1 adalah Level 2)
     speed-amplifier: 1
     haste-amplifier: 1
+
+  # 8. Koki MBG Boost
+  koki-mbg:
+    enabled: true
+    multiplier-5x: 5.0
+    multiplier-10x: 10.0
+    mega-frenzy-multiplier: 5.0
 
 # Batasan Dunia (World Whitelist)
 worlds:
@@ -280,7 +303,7 @@ messages:
     - "<gradient:#FFAA00:#FF5500><bold>⚡ DungeonEventBoost Commands ⚡</bold></gradient>"
     - "<gold>/eb status</gold> <gray>- Cek status dan sisa waktu event</gray>"
     - "<gold>/eb start [jenis] [menit]</gold> <gray>- Memulai event tertentu secara manual</gray>"
-    - "<gray>  Pilihan jenis: drops, exp_skills, damage, defense, economy, exp_vanilla, swiftness, all</gray>"
+    - "<gray>  Pilihan jenis: drops, exp_skills, damage, defense, economy, exp_vanilla, swiftness, all, koki_5x, koki_10x</gray>"
     - "<gold>/eb stop</gold> <gray>- Menghentikan event boost yang sedang aktif (Admin)</gray>"
     - "<gold>/eb reload</gold> <gray>- Memuat ulang konfigurasi plugin (Admin)</gray>"
     - "<dark_gray><st>━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</st></dark_gray>"

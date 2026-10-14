@@ -73,6 +73,12 @@ public class ConfigManager {
     private int swiftnessSpeedAmplifier;
     private int swiftnessHasteAmplifier;
 
+    // Boost 8: Koki MBG
+    private boolean kokiBoostEnabled;
+    private double kokiMultiplier5x;
+    private double kokiMultiplier10x;
+    private double kokiMegaFrenzyMultiplier;
+
     // Worlds Whitelist
     private boolean worldWhitelistEnabled;
     private Set<String> allowedWorlds;
@@ -211,6 +217,12 @@ public class ConfigManager {
         swiftnessDurationSeconds = config.getInt("boosts.dungeon-swiftness.duration-seconds", 20);
         swiftnessSpeedAmplifier = config.getInt("boosts.dungeon-swiftness.speed-amplifier", 1);
         swiftnessHasteAmplifier = config.getInt("boosts.dungeon-swiftness.haste-amplifier", 1);
+
+        // Boost 8: Koki MBG
+        kokiBoostEnabled = config.getBoolean("boosts.koki-mbg.enabled", true);
+        kokiMultiplier5x = config.getDouble("boosts.koki-mbg.multiplier-5x", 5.0);
+        kokiMultiplier10x = config.getDouble("boosts.koki-mbg.multiplier-10x", 10.0);
+        kokiMegaFrenzyMultiplier = config.getDouble("boosts.koki-mbg.mega-frenzy-multiplier", 5.0);
 
         // Worlds Whitelist
         worldWhitelistEnabled = config.getBoolean("worlds.whitelist-enabled", false);
@@ -392,6 +404,11 @@ public class ConfigManager {
     public int getSwiftnessDurationSeconds() { return swiftnessDurationSeconds; }
     public int getSwiftnessSpeedAmplifier() { return swiftnessSpeedAmplifier; }
     public int getSwiftnessHasteAmplifier() { return swiftnessHasteAmplifier; }
+
+    public boolean isKokiBoostEnabled() { return kokiBoostEnabled; }
+    public double getKokiMultiplier5x() { return kokiMultiplier5x; }
+    public double getKokiMultiplier10x() { return kokiMultiplier10x; }
+    public double getKokiMegaFrenzyMultiplier() { return kokiMegaFrenzyMultiplier; }
 
     public boolean isWorldWhitelistEnabled() { return worldWhitelistEnabled; }
     public Set<String> getAllowedWorlds() { return allowedWorlds; }

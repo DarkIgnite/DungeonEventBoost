@@ -82,6 +82,10 @@ public class EventBoostExpansion extends PlaceholderExpansion {
                 return String.valueOf(configManager.getDefenseMultiplier());
             case "economy_multiplier":
                 return String.valueOf(configManager.getEconomyMultiplier());
+            case "koki_multiplier":
+                return String.valueOf(eventManager.getKokiMbgMultiplier());
+            case "koki_multiplier_int":
+                return String.valueOf((int) eventManager.getKokiMbgMultiplier());
             case "vanilla_exp_multiplier":
                 return String.valueOf(configManager.getVanillaExpMultiplier());
             case "interval":

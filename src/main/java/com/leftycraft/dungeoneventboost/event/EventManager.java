@@ -140,7 +140,8 @@ public class EventManager {
                         .replace("{duration}", String.valueOf(durationMinutes))
                         .replace("{drop_mult}", String.valueOf(configManager.getDropMultiplier()))
                         .replace("{exp_mult}", String.valueOf(configManager.getExpMultiplier()))
-                        .replace("{dmg_mult}", String.valueOf(configManager.getDamageMultiplier()));
+                        .replace("{dmg_mult}", String.valueOf(configManager.getDamageMultiplier()))
+                        .replace("{koki_mult}", String.valueOf((int) getKokiMbgMultiplier()));
                 TextUtil.broadcast(replaced);
             }
         }
@@ -440,5 +441,21 @@ public class EventManager {
         this.nextEventTime = nextEventTime;
         resetCountdownPointer();
         saveState();
+    }
+
+    public double getKokiMbgMultiplier() {
+        if (!eventActive || activeEventType == null || !configManager.isKokiBoostEnabled()) {
+            return 1.0;
+        }
+        if (activeEventType == EventType.KOKI_MBG_10X) {
+            return configManager.getKokiMultiplier10x();
+        }
+        if (activeEventType == EventType.KOKI_MBG_5X) {
+            return configManager.getKokiMultiplier5x();
+        }
+        if (activeEventType == EventType.MEGA_FRENZY) {
+            return configManager.getKokiMegaFrenzyMultiplier();
+        }
+        return 1.0;
     }
 }
