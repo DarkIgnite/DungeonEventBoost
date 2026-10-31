@@ -268,12 +268,39 @@ public class BoostItemManager {
         if (plugin.getConfigManager().isPotionParticleConsumeEnabled()) {
             Particle particle = plugin.getConfigManager().getPotionParticleConsume();
             if (particle != null) {
-                player.getWorld().spawnParticle(
-                        particle,
-                        player.getLocation().add(0, 1.0, 0),
-                        plugin.getConfigManager().getPotionParticleConsumeCount(),
-                        0.3, 0.5, 0.3, 0.05
-                );
+                try {
+                    Location loc = player.getLocation().add(0, 1.0, 0);
+                    int count = plugin.getConfigManager().getPotionParticleConsumeCount();
+                    Class<?> dataType = particle.getDataType();
+                    if (dataType == Color.class) {
+                        player.getWorld().spawnParticle(
+                                particle,
+                                loc,
+                                count,
+                                0.3, 0.5, 0.3, 0.05,
+                                Color.fromRGB(80, 200, 255)
+                        );
+                    } else if (dataType == Particle.DustOptions.class) {
+                        player.getWorld().spawnParticle(
+                                particle,
+                                loc,
+                                count,
+                                0.3, 0.5, 0.3, 0.05,
+                                new Particle.DustOptions(Color.fromRGB(80, 200, 255), 1.0f)
+                        );
+                    } else if (dataType == Void.class) {
+                        player.getWorld().spawnParticle(
+                                particle,
+                                loc,
+                                count,
+                                0.3, 0.5, 0.3, 0.05
+                        );
+                    } else {
+                        player.getWorld().spawnParticle(particle, loc, count, 0.3, 0.5, 0.3, 0.05);
+                    }
+                } catch (Throwable t) {
+                    plugin.getLogger().warning("Could not spawn particle " + particle + ": " + t.getMessage());
+                }
             }
         }
 
