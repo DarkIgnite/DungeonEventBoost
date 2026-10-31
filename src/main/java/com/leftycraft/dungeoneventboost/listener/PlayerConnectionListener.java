@@ -19,10 +19,16 @@ public class PlayerConnectionListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerJoin(PlayerJoinEvent event) {
         eventManager.onPlayerJoin(event.getPlayer());
+        if (eventManager.getPlayerBoostManager() != null) {
+            eventManager.getPlayerBoostManager().onPlayerJoin(event.getPlayer());
+        }
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerQuit(PlayerQuitEvent event) {
         eventManager.onPlayerQuit(event.getPlayer());
+        if (eventManager.getPlayerBoostManager() != null) {
+            eventManager.getPlayerBoostManager().onPlayerQuit(event.getPlayer());
+        }
     }
 }

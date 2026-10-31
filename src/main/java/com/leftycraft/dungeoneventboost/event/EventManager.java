@@ -2,6 +2,7 @@ package com.leftycraft.dungeoneventboost.event;
 
 import com.leftycraft.dungeoneventboost.DungeonEventBoost;
 import com.leftycraft.dungeoneventboost.config.ConfigManager;
+import com.leftycraft.dungeoneventboost.potion.PlayerBoostManager;
 import com.leftycraft.dungeoneventboost.util.TextUtil;
 import net.kyori.adventure.title.Title;
 import org.bukkit.Bukkit;
@@ -18,6 +19,7 @@ public class EventManager {
 
     private final DungeonEventBoost plugin;
     private final ConfigManager configManager;
+    private PlayerBoostManager playerBoostManager;
 
     private boolean eventActive = false;
     private EventType activeEventType = null;
@@ -41,6 +43,9 @@ public class EventManager {
     }
 
     public void initialize() {
+        this.playerBoostManager = new PlayerBoostManager(plugin);
+        this.playerBoostManager.initialize();
+
         loadState();
         if (configManager.isAutoStartTimer() && nextEventTime <= 0L && !eventActive) {
             scheduleNextEvent();
@@ -52,6 +57,10 @@ public class EventManager {
      * Takes < 0.001ms CPU time.
      */
     public void tick() {
+        if (playerBoostManager != null) {
+            playerBoostManager.tick();
+        }
+
         long now = System.currentTimeMillis();
 
         if (eventActive) {
@@ -83,6 +92,39 @@ public class EventManager {
             return false;
         }
         return activeEventType == type || activeEventType == EventType.MEGA_FRENZY;
+    }
+
+    public boolean isBoostActive(Player player, EventType type) {
+        if (isBoostActive(type)) {
+            return true;
+        }
+        if (player != null && playerBoostManager != null) {
+            return playerBoostManager.hasActiveBoost(player.getUniqueId(), type);
+        }
+        return false;
+    }
+
+    public double getEffectiveMultiplier(Player player, EventType type, double globalMultiplier) {
+        boolean globalActive = isBoostActive(type);
+        boolean playerActive = player != null && playerBoostManager != null && playerBoostManager.hasActiveBoost(player.getUniqueId(), type);
+
+        if (globalActive && playerActive) {
+            double playerMult = playerBoostManager.getMultiplier(player.getUniqueId(), type, globalMultiplier);
+            String stackMode = plugin.getConfigManager().getPotionGlobalStackMode();
+            if ("MULTIPLY".equalsIgnoreCase(stackMode)) {
+                return globalMultiplier * playerMult;
+            } else {
+                if (type == EventType.DEFENSE) {
+                    return Math.min(globalMultiplier, playerMult);
+                }
+                return Math.max(globalMultiplier, playerMult);
+            }
+        } else if (playerActive) {
+            return playerBoostManager.getMultiplier(player.getUniqueId(), type, globalMultiplier);
+        } else if (globalActive) {
+            return globalMultiplier;
+        }
+        return 1.0;
     }
 
     public EventType pickNextEventType() {
@@ -396,6 +438,10 @@ public class EventManager {
     }
 
     public void saveState() {
+        if (playerBoostManager != null) {
+            playerBoostManager.saveData();
+        }
+
         if (!configManager.isSaveStateOnRestart()) {
             return;
         }
@@ -457,5 +503,33 @@ public class EventManager {
             return configManager.getKokiMegaFrenzyMultiplier();
         }
         return 1.0;
+    }
+
+    public double getKokiMbgMultiplier(UUID uuid) {
+        double global = getKokiMbgMultiplier();
+        if (uuid == null || playerBoostManager == null) {
+            return global;
+        }
+        double personal = playerBoostManager.getKokiMultiplier(uuid);
+        if (global > 1.0 && personal > 1.0) {
+            String stackMode = plugin.getConfigManager().getPotionGlobalStackMode();
+            if ("MULTIPLY".equalsIgnoreCase(stackMode)) {
+                return global * personal;
+            } else {
+                return Math.max(global, personal);
+            }
+        }
+        return Math.max(global, personal);
+    }
+
+    public double getKokiMbgMultiplier(Player player) {
+        if (player == null) {
+            return getKokiMbgMultiplier();
+        }
+        return getKokiMbgMultiplier(player.getUniqueId());
+    }
+
+    public PlayerBoostManager getPlayerBoostManager() {
+        return playerBoostManager;
     }
 }

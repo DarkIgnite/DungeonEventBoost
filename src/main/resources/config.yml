@@ -186,6 +186,253 @@ boosts:
     multiplier-10x: 10.0
     mega-frenzy-multiplier: 5.0
 
+# ================================================================
+#                 FITUR ITEM RAMUAN (BOOST POTIONS)
+#   Setiap jenis event boost dapat dibuat menjadi item potion
+#   yang dapat diminum/dikonsumsi pemain dengan durasi tersendiri.
+# ================================================================
+potion-items:
+  # Konsumsi instan saat klik kanan (true = instan klik kanan, false = minum vanilla)
+  instant-consume: true
+  # Berikan botol kaca kosong setelah mengonsumsi (hanya mode survival/adventure)
+  return-empty-bottle: true
+  # Tampilkan BossBar status hitung mundur saat memiliki boost aktif
+  bossbar-enabled: true
+  bossbar-format: "<gradient:#FFAA00:#FF5500><bold>🧪 {event_name} ⚡</bold></gradient> <gray>(<white>{time_left}</white>)</gray>"
+  bossbar-style: "SOLID"
+  # Tampilkan ActionBar status hitung mundur saat memiliki boost aktif (opsional, default nonaktif karena digantikan BossBar)
+  actionbar-enabled: false
+  actionbar-format: "<gradient:#FFAA00:#FF5500><bold>⚡ BOOST AKTIF:</bold></gradient> {boosts}"
+  # Mode penumpukan waktu jika meminum ramuan yang sama:
+  # EXTEND = Menambah sisa durasi (durasi bertumpuk)
+  # REPLACE = Mengganti durasi dengan durasi baru
+  # DENY = Menolak jika ramuan yang sama sedang aktif
+  stack-mode: "EXTEND"
+  # Penggabungan dengan event global jika keduanya aktif bersamaan:
+  # MAX = Mengambil pengali tertinggi (direkomendasikan, seimbang)
+  # MULTIPLY = Mengalikan keduanya (contoh: 2x global * 2x potion = 4x)
+  global-stack-mode: "MAX"
+
+  # Efek Suara saat meminum ramuan (suara tegukan)
+  sound-consume:
+    enabled: true
+    sound: "ENTITY_GENERIC_DRINK"
+    volume: 1.0
+    pitch: 1.0
+
+  # Efek Suara sekunder aktivasi ramuan (suara power up)
+  sound-consume-success:
+    enabled: true
+    sound: "ENTITY_PLAYER_LEVELUP"
+    volume: 0.8
+    pitch: 1.5
+
+  # Efek Suara saat durasi ramuan habis
+  sound-expire:
+    enabled: true
+    sound: "BLOCK_BEACON_DEACTIVATE"
+    volume: 0.8
+    pitch: 1.2
+
+  # Efek Partikel saat meminum ramuan
+  particle-consume:
+    enabled: true
+    particle: "ENTITY_EFFECT"
+    count: 15
+
+  # Konfigurasi Tampilan Tiap Jenis Ramuan
+  items:
+    DROPS:
+      material: "POTION"
+      potion-color: "#55FF55"
+      custom-model-data: 0
+      glow: true
+      default-duration-minutes: 10
+      name: "<gradient:#55FF55:#00AA00><bold>🧪 Ramuan 2x Dungeon Drops</bold></gradient>"
+      lore:
+        - "<dark_gray><st>━━━━━━━━━━━━━━━━━━━━━━━━━━━━</st></dark_gray>"
+        - "<gray>Tipe: <green><bold>Ramuan Dungeon Boost</bold></green></gray>"
+        - ""
+        - "<white>Efek Ramuan:</white>"
+        - "  <gold>»</gold> <green>Menggandakan seluruh item drop dari</green>"
+        - "    <green>mob dungeon MythicMobs!</green>"
+        - ""
+        - "<gray>Durasi Efek: <yellow><bold>{duration}</bold></yellow></gray>"
+        - "<dark_gray><st>━━━━━━━━━━━━━━━━━━━━━━━━━━━━</st></dark_gray>"
+        - "<yellow>⚡ Klik Kanan untuk meminum ramuan ini!</yellow>"
+
+    EXP_SKILLS:
+      material: "POTION"
+      potion-color: "#00D2FF"
+      custom-model-data: 0
+      glow: true
+      default-duration-minutes: 10
+      name: "<gradient:#55FFFF:#00AAAA><bold>🧪 Ramuan 2x AuraSkills EXP</bold></gradient>"
+      lore:
+        - "<dark_gray><st>━━━━━━━━━━━━━━━━━━━━━━━━━━━━</st></dark_gray>"
+        - "<gray>Tipe: <aqua><bold>Ramuan AuraSkills Boost</bold></aqua></gray>"
+        - ""
+        - "<white>Efek Ramuan:</white>"
+        - "  <gold>»</gold> <aqua>Meningkatkan perolehan EXP AuraSkills</aqua>"
+        - "    <aqua>sebesar 2x lipat untuk seluruh skill!</aqua>"
+        - ""
+        - "<gray>Durasi Efek: <yellow><bold>{duration}</bold></yellow></gray>"
+        - "<dark_gray><st>━━━━━━━━━━━━━━━━━━━━━━━━━━━━</st></dark_gray>"
+        - "<yellow>⚡ Klik Kanan untuk meminum ramuan ini!</yellow>"
+
+    DAMAGE_DEALT:
+      material: "POTION"
+      potion-color: "#FF3C3C"
+      custom-model-data: 0
+      glow: true
+      default-duration-minutes: 10
+      name: "<gradient:#FF5555:#AA0000><bold>🧪 Ramuan 2x Dungeon Damage</bold></gradient>"
+      lore:
+        - "<dark_gray><st>━━━━━━━━━━━━━━━━━━━━━━━━━━━━</st></dark_gray>"
+        - "<gray>Tipe: <red><bold>Ramuan Serangan Dungeon</bold></red></gray>"
+        - ""
+        - "<white>Efek Ramuan:</white>"
+        - "  <gold>»</gold> <red>Serangan fisik & panahmu ke mob</red>"
+        - "    <red>dungeon menghasilkan 2x lipat damage!</red>"
+        - ""
+        - "<gray>Durasi Efek: <yellow><bold>{duration}</bold></yellow></gray>"
+        - "<dark_gray><st>━━━━━━━━━━━━━━━━━━━━━━━━━━━━</st></dark_gray>"
+        - "<yellow>⚡ Klik Kanan untuk meminum ramuan ini!</yellow>"
+
+    DEFENSE:
+      material: "POTION"
+      potion-color: "#FFD700"
+      custom-model-data: 0
+      glow: true
+      default-duration-minutes: 10
+      name: "<gradient:#FFFF55:#FFAA00><bold>🧪 Ramuan 50% Dungeon Defense</bold></gradient>"
+      lore:
+        - "<dark_gray><st>━━━━━━━━━━━━━━━━━━━━━━━━━━━━</st></dark_gray>"
+        - "<gray>Tipe: <yellow><bold>Ramuan Pertahanan Dungeon</bold></yellow></gray>"
+        - ""
+        - "<white>Efek Ramuan:</white>"
+        - "  <gold>»</gold> <yellow>Damage yang kamu terima dari mob</yellow>"
+        - "    <yellow>dungeon berkurang sebesar 50%!</yellow>"
+        - ""
+        - "<gray>Durasi Efek: <yellow><bold>{duration}</bold></yellow></gray>"
+        - "<dark_gray><st>━━━━━━━━━━━━━━━━━━━━━━━━━━━━</st></dark_gray>"
+        - "<yellow>⚡ Klik Kanan untuk meminum ramuan ini!</yellow>"
+
+    ECONOMY:
+      material: "POTION"
+      potion-color: "#FFA500"
+      custom-model-data: 0
+      glow: true
+      default-duration-minutes: 10
+      name: "<gradient:#FFAA00:#FF5500><bold>🧪 Ramuan 2x Jobs & Economy</bold></gradient>"
+      lore:
+        - "<dark_gray><st>━━━━━━━━━━━━━━━━━━━━━━━━━━━━</st></dark_gray>"
+        - "<gray>Tipe: <gold><bold>Ramuan Ekonomi & Jobs</bold></gold></gray>"
+        - ""
+        - "<white>Efek Ramuan:</white>"
+        - "  <gold>»</gold> <gold>Gaji pekerjaan Jobs dan drop uang</gold>"
+        - "    <gold>dari mob digandakan 2x lipat!</gold>"
+        - ""
+        - "<gray>Durasi Efek: <yellow><bold>{duration}</bold></yellow></gray>"
+        - "<dark_gray><st>━━━━━━━━━━━━━━━━━━━━━━━━━━━━</st></dark_gray>"
+        - "<yellow>⚡ Klik Kanan untuk meminum ramuan ini!</yellow>"
+
+    EXP_VANILLA:
+      material: "POTION"
+      potion-color: "#E056FD"
+      custom-model-data: 0
+      glow: true
+      default-duration-minutes: 10
+      name: "<gradient:#FF55FF:#AA00AA><bold>🧪 Ramuan 2x Vanilla EXP</bold></gradient>"
+      lore:
+        - "<dark_gray><st>━━━━━━━━━━━━━━━━━━━━━━━━━━━━</st></dark_gray>"
+        - "<gray>Tipe: <light_purple><bold>Ramuan Vanilla EXP</bold></light_purple></gray>"
+        - ""
+        - "<white>Efek Ramuan:</white>"
+        - "  <gold>»</gold> <light_purple>Perolehan bola EXP vanilla dari mob</light_purple>"
+        - "    <light_purple>dan menambang digandakan 2x lipat!</light_purple>"
+        - ""
+        - "<gray>Durasi Efek: <yellow><bold>{duration}</bold></yellow></gray>"
+        - "<dark_gray><st>━━━━━━━━━━━━━━━━━━━━━━━━━━━━</st></dark_gray>"
+        - "<yellow>⚡ Klik Kanan untuk meminum ramuan ini!</yellow>"
+
+    SWIFTNESS:
+      material: "POTION"
+      potion-color: "#00FFFF"
+      custom-model-data: 0
+      glow: true
+      default-duration-minutes: 10
+      name: "<gradient:#55FFFF:#55FF55><bold>🧪 Ramuan Dungeon Berserk</bold></gradient>"
+      lore:
+        - "<dark_gray><st>━━━━━━━━━━━━━━━━━━━━━━━━━━━━</st></dark_gray>"
+        - "<gray>Tipe: <aqua><bold>Ramuan Berserk & Kecepatan</bold></aqua></gray>"
+        - ""
+        - "<white>Efek Ramuan:</white>"
+        - "  <gold>»</gold> <aqua>Otomatis memperoleh efek Speed II &</aqua>"
+        - "    <aqua>Haste II saat bertarung melawan dungeon mob!</aqua>"
+        - ""
+        - "<gray>Durasi Efek: <yellow><bold>{duration}</bold></yellow></gray>"
+        - "<dark_gray><st>━━━━━━━━━━━━━━━━━━━━━━━━━━━━</st></dark_gray>"
+        - "<yellow>⚡ Klik Kanan untuk meminum ramuan ini!</yellow>"
+
+    MEGA_FRENZY:
+      material: "POTION"
+      potion-color: "#FF1493"
+      custom-model-data: 0
+      glow: true
+      default-duration-minutes: 10
+      name: "<gradient:#FFAA00:#FF0055><bold>⚡ RAMUAN MEGA ALL-STAR ⚡</bold></gradient>"
+      lore:
+        - "<dark_gray><st>━━━━━━━━━━━━━━━━━━━━━━━━━━━━</st></dark_gray>"
+        - "<gray>Tipe: <gradient:#FFAA00:#FF0055><bold>RAMUAN LEGENDA ALL-STAR</bold></gradient></gray>"
+        - ""
+        - "<white>Efek Ramuan:</white>"
+        - "  <gold>»</gold> <gradient:#FFAA00:#FF0055><bold>SELURUH EFEK EVENT BOOST AKTIF</bold></gradient>"
+        - "    <yellow>Drops, Skills, Damage, Defense, Money,</yellow>"
+        - "    <yellow>Vanilla EXP, Swiftness & Koki MBG!</yellow>"
+        - ""
+        - "<gray>Durasi Efek: <yellow><bold>{duration}</bold></yellow></gray>"
+        - "<dark_gray><st>━━━━━━━━━━━━━━━━━━━━━━━━━━━━</st></dark_gray>"
+        - "<yellow>⚡ Klik Kanan untuk meminum ramuan ini!</yellow>"
+
+    KOKI_MBG_5X:
+      material: "POTION"
+      potion-color: "#F39C12"
+      custom-model-data: 0
+      glow: true
+      default-duration-minutes: 10
+      name: "<gradient:#FFAA00:#FFD700><bold>🧪 Ramuan 5x Uang Koki MBG</bold></gradient>"
+      lore:
+        - "<dark_gray><st>━━━━━━━━━━━━━━━━━━━━━━━━━━━━</st></dark_gray>"
+        - "<gray>Tipe: <gold><bold>Ramuan Dapur Koki MBG</bold></gold></gray>"
+        - ""
+        - "<white>Efek Ramuan:</white>"
+        - "  <gold>»</gold> <gold>Pendapatan kasir Dapur Koki MBG kamu</gold>"
+        - "    <gold>dikalikan 5x lipat lebih besar!</gold>"
+        - ""
+        - "<gray>Durasi Efek: <yellow><bold>{duration}</bold></yellow></gray>"
+        - "<dark_gray><st>━━━━━━━━━━━━━━━━━━━━━━━━━━━━</st></dark_gray>"
+        - "<yellow>⚡ Klik Kanan untuk meminum ramuan ini!</yellow>"
+
+    KOKI_MBG_10X:
+      material: "POTION"
+      potion-color: "#E74C3C"
+      custom-model-data: 0
+      glow: true
+      default-duration-minutes: 10
+      name: "<gradient:#FF0844:#FFB199><bold>🧪 Ramuan 10x Uang Koki MBG</bold></gradient>"
+      lore:
+        - "<dark_gray><st>━━━━━━━━━━━━━━━━━━━━━━━━━━━━</st></dark_gray>"
+        - "<gray>Tipe: <red><bold>Ramuan Dapur Koki MBG</bold></red></gray>"
+        - ""
+        - "<white>Efek Ramuan:</white>"
+        - "  <gold>»</gold> <red>Pendapatan kasir Dapur Koki MBG kamu</red>"
+        - "    <red>dikalikan 10x lipat lebih besar!</red>"
+        - ""
+        - "<gray>Durasi Efek: <yellow><bold>{duration}</bold></yellow></gray>"
+        - "<dark_gray><st>━━━━━━━━━━━━━━━━━━━━━━━━━━━━</st></dark_gray>"
+        - "<yellow>⚡ Klik Kanan untuk meminum ramuan ini!</yellow>"
+
 # Batasan Dunia (World Whitelist)
 worlds:
   whitelist-enabled: false
@@ -258,6 +505,30 @@ messages:
   started-manual: "<green>Event <white>{event_name}</white> berhasil dimulai secara manual selama <white>{duration}</white> menit!</green>"
   stopped-manual: "<yellow>Event boost berhasil dihentikan oleh admin.</yellow>"
 
+  # Pesan Terkait Ramuan (Potions)
+  potion-consumed: "<green>⚡ Kamu meminum <white>{item_name}</white>! Efek <white>{event_name}</white> aktif selama <yellow>{duration}</yellow>!</green>"
+  potion-extended: "<green>⚡ Durasi efek <white>{event_name}</white> diperpanjang! Total sisa waktu: <yellow>{duration}</yellow>!</green>"
+  potion-expired: "<red>⚡ Efek ramuan <white>{event_name}</white> kamu telah berakhir!</red>"
+  potion-given: "<green>Berhasil memberikan <white>{amount}x {item_name}</white> ke <yellow>{player}</yellow> (<white>{duration}</white>).</green>"
+  potion-received: "<green>⚡ Kamu menerima <white>{amount}x {item_name}</white> (<white>{duration}</white>)!</green>"
+
+  # Pesan Menghapus Efek Boost (/eb remove)
+  boost-removed-admin: "<green>Berhasil menghapus efek boost <white>{event_name}</white> dari <yellow>{player}</yellow>.</green>"
+  boost-removed-all-admin: "<green>Berhasil menghapus seluruh efek boost personal dari <yellow>{player}</yellow>.</green>"
+  boost-removed-player: "<yellow>⚡ Efek boost <white>{event_name}</white> kamu telah dihentikan oleh admin.</yellow>"
+  boost-removed-all-player: "<yellow>⚡ Seluruh efek boost personal kamu telah dihentikan oleh admin.</yellow>"
+  boost-not-found: "<red>Pemain <white>{player}</white> tidak memiliki efek boost <yellow>{type}</yellow> yang sedang aktif!</red>"
+  boost-none-active: "<red>Pemain <white>{player}</white> tidak memiliki efek boost personal yang sedang aktif!</red>"
+
+  # Pesan Informasi Status Personal (/eb myboost)
+  myboost-none: "<yellow>Kamu tidak memiliki efek ramuan boost yang sedang aktif saat ini.</yellow>"
+  myboost-header:
+    - "<dark_gray><st>━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</st></dark_gray>"
+    - "<center><gradient:#FFAA00:#FF5500><bold>⚡ STATUS BOOST PERSONAL KAMU ⚡</bold></gradient></center>"
+  myboost-entry: "  <gold>»</gold> <white>{event_name}</white>: <yellow><bold>{time_left}</bold></yellow>"
+  myboost-footer:
+    - "<dark_gray><st>━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</st></dark_gray>"
+
   # Pesan Siaran (Broadcast) Mulai Event
   broadcast-start:
     - "<dark_gray><st>━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</st></dark_gray>"
@@ -301,9 +572,13 @@ messages:
   help:
     - "<dark_gray><st>━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</st></dark_gray>"
     - "<gradient:#FFAA00:#FF5500><bold>⚡ DungeonEventBoost Commands ⚡</bold></gradient>"
-    - "<gold>/eb status</gold> <gray>- Cek status dan sisa waktu event</gray>"
-    - "<gold>/eb start [jenis] [menit]</gold> <gray>- Memulai event tertentu secara manual</gray>"
+    - "<gold>/eb status</gold> <gray>- Cek status dan sisa waktu event global</gray>"
+    - "<gold>/eb myboost</gold> <gray>- Cek sisa waktu ramuan boost personal milikmu</gray>"
+    - "<gold>/eb start [jenis] [menit]</gold> <gray>- Memulai event global tertentu secara manual (Admin)</gray>"
+    - "<gold>/eb stop</gold> <gray>- Menghentikan event global yang sedang aktif (Admin)</gray>"
+    - "<gold>/eb give <player> <jenis> [menit] [jumlah]</gold> <gray>- Memberikan ramuan boost ke pemain (Admin)</gray>"
+    - "<gold>/eb giveall <jenis> [menit] [jumlah]</gold> <gray>- Membagikan ramuan boost ke seluruh pemain online (Admin)</gray>"
+    - "<gold>/eb remove <player> [jenis]</gold> <gray>- Menghapus efek boost personal dari pemain (Admin)</gray>"
     - "<gray>  Pilihan jenis: drops, exp_skills, damage, defense, economy, exp_vanilla, swiftness, all, koki_5x, koki_10x</gray>"
-    - "<gold>/eb stop</gold> <gray>- Menghentikan event boost yang sedang aktif (Admin)</gray>"
     - "<gold>/eb reload</gold> <gray>- Memuat ulang konfigurasi plugin (Admin)</gray>"
     - "<dark_gray><st>━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</st></dark_gray>"

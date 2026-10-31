@@ -5,6 +5,7 @@ import com.leftycraft.dungeoneventboost.config.ConfigManager;
 import com.leftycraft.dungeoneventboost.event.EventManager;
 import com.leftycraft.dungeoneventboost.listener.*;
 import com.leftycraft.dungeoneventboost.placeholder.EventBoostExpansion;
+import com.leftycraft.dungeoneventboost.potion.BoostItemManager;
 import org.bukkit.Bukkit;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.plugin.PluginManager;
@@ -17,11 +18,15 @@ public final class DungeonEventBoost extends JavaPlugin {
 
     private ConfigManager configManager;
     private EventManager eventManager;
+    private BoostItemManager boostItemManager;
     private BukkitTask tickTask;
 
     @Override
     public void onEnable() {
         instance = this;
+
+        // Initialize Boost Item Manager
+        this.boostItemManager = new BoostItemManager(this);
 
         // Load Configuration
         this.configManager = new ConfigManager(this);
@@ -35,6 +40,7 @@ public final class DungeonEventBoost extends JavaPlugin {
         PluginManager pm = getServer().getPluginManager();
         pm.registerEvents(new PlayerConnectionListener(this), this);
         pm.registerEvents(new VanillaExpListener(this), this);
+        pm.registerEvents(new PotionConsumeListener(this), this);
 
         // MythicMobs Hook
         if (pm.isPluginEnabled("MythicMobs")) {
@@ -96,6 +102,9 @@ public final class DungeonEventBoost extends JavaPlugin {
 
         if (eventManager != null) {
             eventManager.removeBossBar();
+            if (eventManager.getPlayerBoostManager() != null) {
+                eventManager.getPlayerBoostManager().removeAllBossBars();
+            }
             eventManager.saveState();
         }
 
@@ -112,5 +121,9 @@ public final class DungeonEventBoost extends JavaPlugin {
 
     public EventManager getEventManager() {
         return eventManager;
+    }
+
+    public BoostItemManager getBoostItemManager() {
+        return boostItemManager;
     }
 }

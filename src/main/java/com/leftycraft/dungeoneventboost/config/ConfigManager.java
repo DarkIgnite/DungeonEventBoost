@@ -118,6 +118,32 @@ public class ConfigManager {
     private float soundTickVolume;
     private float soundTickPitch;
 
+    // Potion Items Settings
+    private boolean potionInstantConsume;
+    private boolean potionReturnEmptyBottle;
+    private boolean potionActionbarEnabled;
+    private String potionActionbarFormat;
+    private boolean potionBossbarEnabled;
+    private String potionBossbarFormat;
+    private BarStyle potionBossbarStyle;
+    private String potionStackMode;
+    private String potionGlobalStackMode;
+    private boolean potionSoundConsumeEnabled;
+    private Sound potionSoundConsume;
+    private float potionSoundConsumeVolume;
+    private float potionSoundConsumePitch;
+    private boolean potionSoundConsumeSuccessEnabled;
+    private Sound potionSoundConsumeSuccess;
+    private float potionSoundConsumeSuccessVolume;
+    private float potionSoundConsumeSuccessPitch;
+    private boolean potionSoundExpireEnabled;
+    private Sound potionSoundExpire;
+    private float potionSoundExpireVolume;
+    private float potionSoundExpirePitch;
+    private boolean potionParticleConsumeEnabled;
+    private Particle potionParticleConsume;
+    private int potionParticleConsumeCount;
+
     // Messages
     private String messagePrefix;
     private String messageNoPermission;
@@ -132,6 +158,21 @@ public class ConfigManager {
     private List<String> messageStatusActive;
     private List<String> messageStatusInactive;
     private List<String> messageHelp;
+    private String messagePotionConsumed;
+    private String messagePotionExtended;
+    private String messagePotionExpired;
+    private String messagePotionGiven;
+    private String messagePotionReceived;
+    private String messageMyboostNone;
+    private List<String> messageMyboostHeader;
+    private String messageMyboostEntry;
+    private List<String> messageMyboostFooter;
+    private String messageBoostRemovedAdmin;
+    private String messageBoostRemovedAllAdmin;
+    private String messageBoostRemovedPlayer;
+    private String messageBoostRemovedAllPlayer;
+    private String messageBoostNotFound;
+    private String messageBoostNoneActive;
 
     // Event Info Map
     private final Map<EventType, EventDisplayInfo> eventDisplayMap = new EnumMap<>(EventType.class);
@@ -269,6 +310,36 @@ public class ConfigManager {
         soundTickVolume = (float) config.getDouble("sounds.countdown-tick.volume", 0.8);
         soundTickPitch = (float) config.getDouble("sounds.countdown-tick.pitch", 1.5);
 
+        // Potion Items Settings
+        potionInstantConsume = config.getBoolean("potion-items.instant-consume", true);
+        potionReturnEmptyBottle = config.getBoolean("potion-items.return-empty-bottle", true);
+        potionActionbarEnabled = config.getBoolean("potion-items.actionbar-enabled", false);
+        potionActionbarFormat = config.getString("potion-items.actionbar-format", "<gradient:#FFAA00:#FF5500><bold>⚡ BOOST AKTIF:</bold></gradient> {boosts}");
+        potionBossbarEnabled = config.getBoolean("potion-items.bossbar-enabled", true);
+        potionBossbarFormat = config.getString("potion-items.bossbar-format", "<gradient:#FFAA00:#FF5500><bold>🧪 {event_name} ⚡</bold></gradient> <gray>(<white>{time_left}</white>)</gray>");
+        potionBossbarStyle = parseBarStyle(config.getString("potion-items.bossbar-style", "SOLID"));
+        potionStackMode = config.getString("potion-items.stack-mode", "EXTEND").toUpperCase();
+        potionGlobalStackMode = config.getString("potion-items.global-stack-mode", "MAX").toUpperCase();
+
+        potionSoundConsumeEnabled = config.getBoolean("potion-items.sound-consume.enabled", true);
+        potionSoundConsume = parseSound(config.getString("potion-items.sound-consume.sound", "ENTITY_GENERIC_DRINK"), Sound.ENTITY_GENERIC_DRINK);
+        potionSoundConsumeVolume = (float) config.getDouble("potion-items.sound-consume.volume", 1.0);
+        potionSoundConsumePitch = (float) config.getDouble("potion-items.sound-consume.pitch", 1.0);
+
+        potionSoundConsumeSuccessEnabled = config.getBoolean("potion-items.sound-consume-success.enabled", true);
+        potionSoundConsumeSuccess = parseSound(config.getString("potion-items.sound-consume-success.sound", "ENTITY_PLAYER_LEVELUP"), Sound.ENTITY_PLAYER_LEVELUP);
+        potionSoundConsumeSuccessVolume = (float) config.getDouble("potion-items.sound-consume-success.volume", 0.8);
+        potionSoundConsumeSuccessPitch = (float) config.getDouble("potion-items.sound-consume-success.pitch", 1.5);
+
+        potionSoundExpireEnabled = config.getBoolean("potion-items.sound-expire.enabled", true);
+        potionSoundExpire = parseSound(config.getString("potion-items.sound-expire.sound", "BLOCK_BEACON_DEACTIVATE"), Sound.BLOCK_BEACON_DEACTIVATE);
+        potionSoundExpireVolume = (float) config.getDouble("potion-items.sound-expire.volume", 0.8);
+        potionSoundExpirePitch = (float) config.getDouble("potion-items.sound-expire.pitch", 1.2);
+
+        potionParticleConsumeEnabled = config.getBoolean("potion-items.particle-consume.enabled", true);
+        potionParticleConsume = parseParticle(config.getString("potion-items.particle-consume.particle", "ENTITY_EFFECT"), Particle.ENTITY_EFFECT);
+        potionParticleConsumeCount = config.getInt("potion-items.particle-consume.count", 15);
+
         // Messages
         messagePrefix = config.getString("messages.prefix", "<gradient:#FFAA00:#FF5500><bold>[BOOST]</bold></gradient> ");
         messageNoPermission = config.getString("messages.no-permission", "<red>Kamu tidak memiliki izin untuk menggunakan perintah ini!</red>");
@@ -284,8 +355,34 @@ public class ConfigManager {
         messageStatusInactive = config.getStringList("messages.status-inactive");
         messageHelp = config.getStringList("messages.help");
 
+        messagePotionConsumed = config.getString("messages.potion-consumed", "<green>⚡ Kamu meminum <white>{item_name}</white>! Efek <white>{event_name}</white> aktif selama <yellow>{duration}</yellow>!</green>");
+        messagePotionExtended = config.getString("messages.potion-extended", "<green>⚡ Durasi efek <white>{event_name}</white> diperpanjang! Total sisa waktu: <yellow>{duration}</yellow>!</green>");
+        messagePotionExpired = config.getString("messages.potion-expired", "<red>⚡ Efek ramuan <white>{event_name}</white> kamu telah berakhir!</red>");
+        messagePotionGiven = config.getString("messages.potion-given", "<green>Berhasil memberikan <white>{amount}x {item_name}</white> ke <yellow>{player}</yellow> (<white>{duration}</white>).</green>");
+        messagePotionReceived = config.getString("messages.potion-received", "<green>⚡ Kamu menerima <white>{amount}x {item_name}</white> (<white>{duration}</white>)!</green>");
+        messageMyboostNone = config.getString("messages.myboost-none", "<yellow>Kamu tidak memiliki efek ramuan boost yang sedang aktif saat ini.</yellow>");
+        messageMyboostHeader = config.isList("messages.myboost-header")
+                ? config.getStringList("messages.myboost-header")
+                : Collections.singletonList(config.getString("messages.myboost-header", "<dark_gray><st>━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</st></dark_gray>\n<gradient:#FFAA00:#FF5500><bold>⚡ STATUS BOOST PERSONAL KAMU ⚡</bold></gradient>"));
+        messageMyboostEntry = config.getString("messages.myboost-entry", "  <gold>»</gold> <white>{event_name}</white>: <yellow><bold>{time_left}</bold></yellow>");
+        messageMyboostFooter = config.isList("messages.myboost-footer")
+                ? config.getStringList("messages.myboost-footer")
+                : Collections.singletonList(config.getString("messages.myboost-footer", "<dark_gray><st>━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</st></dark_gray>"));
+
+        messageBoostRemovedAdmin = config.getString("messages.boost-removed-admin", "<green>Berhasil menghapus efek boost <white>{event_name}</white> dari <yellow>{player}</yellow>.</green>");
+        messageBoostRemovedAllAdmin = config.getString("messages.boost-removed-all-admin", "<green>Berhasil menghapus seluruh efek boost personal dari <yellow>{player}</yellow>.</green>");
+        messageBoostRemovedPlayer = config.getString("messages.boost-removed-player", "<yellow>⚡ Efek boost <white>{event_name}</white> kamu telah dihentikan oleh admin.</yellow>");
+        messageBoostRemovedAllPlayer = config.getString("messages.boost-removed-all-player", "<yellow>⚡ Seluruh efek boost personal kamu telah dihentikan oleh admin.</yellow>");
+        messageBoostNotFound = config.getString("messages.boost-not-found", "<red>Pemain <white>{player}</white> tidak memiliki efek boost <yellow>{type}</yellow> yang sedang aktif!</red>");
+        messageBoostNoneActive = config.getString("messages.boost-none-active", "<red>Pemain <white>{player}</white> tidak memiliki efek boost personal yang sedang aktif!</red>");
+
         // Load Event Display Info
         loadEventDisplays(config);
+
+        // Load Boost Items Info
+        if (plugin.getBoostItemManager() != null) {
+            plugin.getBoostItemManager().loadConfigs(config);
+        }
     }
 
     private void loadEventDisplays(FileConfiguration config) {
@@ -459,6 +556,52 @@ public class ConfigManager {
     public List<String> getMessageStatusActive() { return messageStatusActive; }
     public List<String> getMessageStatusInactive() { return messageStatusInactive; }
     public List<String> getMessageHelp() { return messageHelp; }
+
+    public boolean isPotionInstantConsume() { return potionInstantConsume; }
+    public boolean isPotionReturnEmptyBottle() { return potionReturnEmptyBottle; }
+    public boolean isPotionActionbarEnabled() { return potionActionbarEnabled; }
+    public String getPotionActionbarFormat() { return potionActionbarFormat; }
+    public boolean isPotionBossbarEnabled() { return potionBossbarEnabled; }
+    public String getPotionBossbarFormat() { return potionBossbarFormat; }
+    public BarStyle getPotionBossbarStyle() { return potionBossbarStyle; }
+    public String getPotionStackMode() { return potionStackMode; }
+    public String getPotionGlobalStackMode() { return potionGlobalStackMode; }
+
+    public boolean isPotionSoundConsumeEnabled() { return potionSoundConsumeEnabled; }
+    public Sound getPotionSoundConsume() { return potionSoundConsume; }
+    public float getPotionSoundConsumeVolume() { return potionSoundConsumeVolume; }
+    public float getPotionSoundConsumePitch() { return potionSoundConsumePitch; }
+
+    public boolean isPotionSoundConsumeSuccessEnabled() { return potionSoundConsumeSuccessEnabled; }
+    public Sound getPotionSoundConsumeSuccess() { return potionSoundConsumeSuccess; }
+    public float getPotionSoundConsumeSuccessVolume() { return potionSoundConsumeSuccessVolume; }
+    public float getPotionSoundConsumeSuccessPitch() { return potionSoundConsumeSuccessPitch; }
+
+    public boolean isPotionSoundExpireEnabled() { return potionSoundExpireEnabled; }
+    public Sound getPotionSoundExpire() { return potionSoundExpire; }
+    public float getPotionSoundExpireVolume() { return potionSoundExpireVolume; }
+    public float getPotionSoundExpirePitch() { return potionSoundExpirePitch; }
+
+    public boolean isPotionParticleConsumeEnabled() { return potionParticleConsumeEnabled; }
+    public Particle getPotionParticleConsume() { return potionParticleConsume; }
+    public int getPotionParticleConsumeCount() { return potionParticleConsumeCount; }
+
+    public String getMessagePotionConsumed() { return messagePotionConsumed; }
+    public String getMessagePotionExtended() { return messagePotionExtended; }
+    public String getMessagePotionExpired() { return messagePotionExpired; }
+    public String getMessagePotionGiven() { return messagePotionGiven; }
+    public String getMessagePotionReceived() { return messagePotionReceived; }
+    public String getMessageMyboostNone() { return messageMyboostNone; }
+    public List<String> getMessageMyboostHeader() { return messageMyboostHeader; }
+    public String getMessageMyboostEntry() { return messageMyboostEntry; }
+    public List<String> getMessageMyboostFooter() { return messageMyboostFooter; }
+
+    public String getMessageBoostRemovedAdmin() { return messageBoostRemovedAdmin; }
+    public String getMessageBoostRemovedAllAdmin() { return messageBoostRemovedAllAdmin; }
+    public String getMessageBoostRemovedPlayer() { return messageBoostRemovedPlayer; }
+    public String getMessageBoostRemovedAllPlayer() { return messageBoostRemovedAllPlayer; }
+    public String getMessageBoostNotFound() { return messageBoostNotFound; }
+    public String getMessageBoostNoneActive() { return messageBoostNoneActive; }
 
     public static class EventDisplayInfo {
         private final String name;

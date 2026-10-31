@@ -7,6 +7,7 @@ import com.leftycraft.dungeoneventboost.event.EventType;
 import io.lumine.mythic.bukkit.events.MythicMobDeathEvent;
 import io.lumine.mythic.core.mobs.ActiveMob;
 import org.bukkit.World;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -29,7 +30,12 @@ public class MythicMobsDropListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onMythicMobDeath(MythicMobDeathEvent event) {
-        if (!config.isDropBoostEnabled() || !eventManager.isBoostActive(EventType.DROPS)) {
+        if (!config.isDropBoostEnabled()) {
+            return;
+        }
+
+        Player killer = event.getKiller() instanceof Player p ? p : null;
+        if (!eventManager.isBoostActive(killer, EventType.DROPS)) {
             return;
         }
 
@@ -39,7 +45,7 @@ public class MythicMobsDropListener implements Listener {
         }
 
         // Check player killer requirement
-        if (config.isDropRequirePlayerKiller() && event.getKiller() == null) {
+        if (config.isDropRequirePlayerKiller() && killer == null) {
             return;
         }
 
@@ -56,7 +62,7 @@ public class MythicMobsDropListener implements Listener {
             return;
         }
 
-        double multiplier = config.getDropMultiplier();
+        double multiplier = eventManager.getEffectiveMultiplier(killer, EventType.DROPS, config.getDropMultiplier());
         if (multiplier <= 1.0) {
             return;
         }

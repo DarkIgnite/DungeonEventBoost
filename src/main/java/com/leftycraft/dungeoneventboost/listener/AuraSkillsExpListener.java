@@ -24,11 +24,15 @@ public class AuraSkillsExpListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onXpGain(XpGainEvent event) {
-        if (!config.isExpBoostEnabled() || !eventManager.isBoostActive(EventType.EXP_SKILLS)) {
+        if (!config.isExpBoostEnabled()) {
             return;
         }
 
         Player player = event.getPlayer();
+        if (!eventManager.isBoostActive(player, EventType.EXP_SKILLS)) {
+            return;
+        }
+
         if (player != null && config.isWorldWhitelistEnabled()) {
             if (!config.getAllowedWorlds().contains(player.getWorld().getName().toLowerCase())) {
                 return;
@@ -43,7 +47,7 @@ public class AuraSkillsExpListener implements Listener {
             }
         }
 
-        double multiplier = config.getExpMultiplier();
+        double multiplier = eventManager.getEffectiveMultiplier(player, EventType.EXP_SKILLS, config.getExpMultiplier());
         if (multiplier <= 1.0) {
             return;
         }

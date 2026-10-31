@@ -31,11 +31,15 @@ public class DungeonDefenseListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onDungeonMobDamagePlayer(EntityDamageByEntityEvent event) {
-        if (!config.isDefenseBoostEnabled() || !eventManager.isBoostActive(EventType.DEFENSE)) {
+        if (!config.isDefenseBoostEnabled()) {
             return;
         }
 
         if (!(event.getEntity() instanceof Player player)) {
+            return;
+        }
+
+        if (!eventManager.isBoostActive(player, EventType.DEFENSE)) {
             return;
         }
 
@@ -53,7 +57,7 @@ public class DungeonDefenseListener implements Listener {
             return;
         }
 
-        double multiplier = config.getDefenseMultiplier(); // default 0.5 (50% reduction)
+        double multiplier = eventManager.getEffectiveMultiplier(player, EventType.DEFENSE, config.getDefenseMultiplier()); // default 0.5 (50% reduction)
         if (multiplier >= 1.0) {
             return;
         }

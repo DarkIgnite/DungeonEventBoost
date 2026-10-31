@@ -6,6 +6,8 @@ import com.leftycraft.dungeoneventboost.config.ConfigManager;
 import com.leftycraft.dungeoneventboost.event.EventManager;
 import com.leftycraft.dungeoneventboost.event.EventType;
 import io.lumine.mythic.bukkit.events.MythicMobLootDropEvent;
+import org.bukkit.OfflinePlayer;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -24,11 +26,17 @@ public class JobsEconomyListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onJobsPayment(JobsPrePaymentEvent event) {
-        if (!config.isEconomyBoostEnabled() || !eventManager.isBoostActive(EventType.ECONOMY)) {
+        if (!config.isEconomyBoostEnabled()) {
             return;
         }
 
-        double multiplier = config.getEconomyMultiplier();
+        OfflinePlayer op = event.getPlayer();
+        Player player = op != null ? op.getPlayer() : null;
+        if (!eventManager.isBoostActive(player, EventType.ECONOMY)) {
+            return;
+        }
+
+        double multiplier = eventManager.getEffectiveMultiplier(player, EventType.ECONOMY, config.getEconomyMultiplier());
         if (multiplier <= 1.0) {
             return;
         }
@@ -41,11 +49,16 @@ public class JobsEconomyListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onMythicMobMoney(MythicMobLootDropEvent event) {
-        if (!config.isEconomyBoostEnabled() || !eventManager.isBoostActive(EventType.ECONOMY)) {
+        if (!config.isEconomyBoostEnabled()) {
             return;
         }
 
-        double multiplier = config.getEconomyMultiplier();
+        Player player = event.getKiller() instanceof Player p ? p : null;
+        if (!eventManager.isBoostActive(player, EventType.ECONOMY)) {
+            return;
+        }
+
+        double multiplier = eventManager.getEffectiveMultiplier(player, EventType.ECONOMY, config.getEconomyMultiplier());
         if (multiplier <= 1.0) {
             return;
         }

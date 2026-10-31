@@ -32,7 +32,7 @@ public class DungeonSwiftnessListener implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onDungeonCombat(EntityDamageByEntityEvent event) {
-        if (!config.isSwiftnessBoostEnabled() || !eventManager.isBoostActive(EventType.SWIFTNESS)) {
+        if (!config.isSwiftnessBoostEnabled()) {
             return;
         }
 
@@ -50,6 +50,10 @@ public class DungeonSwiftnessListener implements Listener {
         }
 
         if (player == null || activeMob == null) {
+            return;
+        }
+
+        if (!eventManager.isBoostActive(player, EventType.SWIFTNESS)) {
             return;
         }
 

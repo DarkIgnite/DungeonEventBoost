@@ -32,7 +32,7 @@ public class DungeonDamageListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onEntityDamage(EntityDamageByEntityEvent event) {
-        if (!config.isDamageBoostEnabled() || !eventManager.isBoostActive(EventType.DAMAGE_DEALT)) {
+        if (!config.isDamageBoostEnabled()) {
             return;
         }
 
@@ -48,7 +48,7 @@ public class DungeonDamageListener implements Listener {
 
         // Check if damager is a player or player-shot projectile
         Player player = getPlayerDamager(event.getDamager());
-        if (player == null) {
+        if (player == null || !eventManager.isBoostActive(player, EventType.DAMAGE_DEALT)) {
             return;
         }
 
@@ -63,7 +63,7 @@ public class DungeonDamageListener implements Listener {
             return;
         }
 
-        double multiplier = config.getDamageMultiplier();
+        double multiplier = eventManager.getEffectiveMultiplier(player, EventType.DAMAGE_DEALT, config.getDamageMultiplier());
         if (multiplier <= 1.0) {
             return;
         }

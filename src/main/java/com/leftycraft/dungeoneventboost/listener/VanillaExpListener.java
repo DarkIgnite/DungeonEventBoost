@@ -25,17 +25,21 @@ public class VanillaExpListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGH)
     public void onPlayerExpChange(PlayerExpChangeEvent event) {
-        if (!config.isVanillaExpBoostEnabled() || !eventManager.isBoostActive(EventType.EXP_VANILLA)) {
+        if (!config.isVanillaExpBoostEnabled()) {
             return;
         }
 
         Player player = event.getPlayer();
+        if (!eventManager.isBoostActive(player, EventType.EXP_VANILLA)) {
+            return;
+        }
+
         World world = player.getWorld();
         if (config.isWorldWhitelistEnabled() && !config.getAllowedWorlds().contains(world.getName().toLowerCase())) {
             return;
         }
 
-        double multiplier = config.getVanillaExpMultiplier();
+        double multiplier = eventManager.getEffectiveMultiplier(player, EventType.EXP_VANILLA, config.getVanillaExpMultiplier());
         if (multiplier <= 1.0) {
             return;
         }
